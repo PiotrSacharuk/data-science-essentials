@@ -38,6 +38,7 @@ repos:
     hooks:
       - id: bandit
         args: ["-r", "app/", "-f", "json", "-o", "bandit-report.json"]
+        pass_filenames: false
 
   - repo: local
     hooks:

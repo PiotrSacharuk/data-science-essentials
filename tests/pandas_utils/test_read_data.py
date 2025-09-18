@@ -1,7 +1,14 @@
+"""
+Tests for the DataReader class in pandas_utils.read_data module.
+
+This module contains comprehensive tests for CSV data reading functionality
+including various configurations and edge cases.
+"""
+
 import pandas as pd
 import pytest
 
-from source.pandas_utils.read_data import DataFrame
+from source.pandas_utils.read_data import DataReader
 
 # Shared column names used in tests
 DEFAULT_NAMES = [
@@ -41,7 +48,7 @@ def df_factory(monkeypatch):
 
     def _make(mock_data):
         monkeypatch.setattr(pd, "read_csv", lambda *a, **k: pd.DataFrame(mock_data))
-        return DataFrame(
+        return DataReader(
             file_path="dummy.csv",
             separator=",",
             decimal=".",

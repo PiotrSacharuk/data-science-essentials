@@ -1,5 +1,9 @@
 name: Test Report
 
+permissions:
+  contents: read
+  issues: write
+
 on:
   pull_request:
     branches: [ master ]
@@ -17,12 +21,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests and generate JUnit report
-        run: pytest --junitxml=report.xml --cov=source
-      - name: Upload test report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-report
-          path: report.xml
+      - name: Install test tools
+        run: pip install -r requirements.txt pytest-json-report requests
+      - name: Run tests and generate JSON report
+        run: pytest --json-report --json-report-file=report.json --cov=source || true
+      - name: Post test report to PR
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          GITHUB_API_URL: ${{ github.api_url }}
+        run: python .github/scripts/post_test_report.py

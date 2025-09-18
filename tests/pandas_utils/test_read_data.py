@@ -1,98 +1,72 @@
-from unittest.mock import patch
-
 import pandas as pd
+import pytest
 
 from source.pandas_utils.read_data import DataFrame
 
-
-# Mock pandas.read_csv to simulate loading data
-@patch("pandas.read_csv")
-def test_dataframe_loads_csv(mock_read_csv):
-    # Prepare mock data
-    mock_data = {
-        "sepal_length": [5.1, 4.9],
-        "sepal_width": [3.5, 3.0],
-        "petal_length": [1.4, 1.4],
-        "petal_width": [0.2, 0.2],
-        "target": [0, 0],
-    }
-    mock_read_csv.return_value = pd.DataFrame(mock_data)
-
-    # Test the DataFrame class
-    df = DataFrame(
-        file_path="dummy.csv",
-        separator=",",
-        decimal=".",
-        header=False,
-        names=["sepal_length", "sepal_width", "petal_length", "petal_width", "target"],
-    )
-    assert df.df.equals(pd.DataFrame(mock_data))  # Verify the data is correct
+# Shared column names used in tests
+DEFAULT_NAMES = [
+    "sepal_length",
+    "sepal_width",
+    "petal_length",
+    "petal_width",
+    "target",
+]
 
 
-@patch("pandas.read_csv")
-def test_dataframe_head(mock_read_csv):
-    # Prepare mock data
-    mock_data = {
-        "sepal_length": [5.1, 4.9, 4.7],
-        "sepal_width": [3.5, 3.0, 3.2],
-        "petal_length": [1.4, 1.4, 1.3],
-        "petal_width": [0.2, 0.2, 0.2],
-        "target": [0, 0, 0],
-    }
-    mock_read_csv.return_value = pd.DataFrame(mock_data)
+# Common mock datasets used across tests
+MOCK_SMALL = {
+    "sepal_length": [5.1, 4.9],
+    "sepal_width": [3.5, 3.0],
+    "petal_length": [1.4, 1.4],
+    "petal_width": [0.2, 0.2],
+    "target": [0, 0],
+}
 
-    # Test the head method
-    df = DataFrame(
-        file_path="dummy.csv",
-        separator=",",
-        decimal=".",
-        header=False,
-        names=["sepal_length", "sepal_width", "petal_length", "petal_width", "target"],
-    )
-    assert df.head(2).equals(pd.DataFrame(mock_data).head(2))
+MOCK_STANDARD = {
+    "sepal_length": [5.1, 4.9, 4.7],
+    "sepal_width": [3.5, 3.0, 3.2],
+    "petal_length": [1.4, 1.4, 1.3],
+    "petal_width": [0.2, 0.2, 0.2],
+    "target": [0, 0, 0],
+}
 
 
-@patch("pandas.read_csv")
-def test_dataframe_tail(mock_read_csv):
-    # Prepare mock data
-    mock_data = {
-        "sepal_length": [5.1, 4.9, 4.7],
-        "sepal_width": [3.5, 3.0, 3.2],
-        "petal_length": [1.4, 1.4, 1.3],
-        "petal_width": [0.2, 0.2, 0.2],
-        "target": [0, 0, 0],
-    }
-    mock_read_csv.return_value = pd.DataFrame(mock_data)
+@pytest.fixture
+def df_factory(monkeypatch):
+    """Return a factory that builds a `DataFrame` instance
+       with a mocked `pandas.read_csv`.
 
-    # Test the tail method
-    df = DataFrame(
-        file_path="dummy.csv",
-        separator=",",
-        decimal=".",
-        header=False,
-        names=["sepal_length", "sepal_width", "petal_length", "petal_width", "target"],
-    )
-    assert df.tail(2).equals(pd.DataFrame(mock_data).tail(2))
+    Usage: df = df_factory(mock_data)
+    """
+
+    def _make(mock_data):
+        monkeypatch.setattr(pd, "read_csv", lambda *a, **k: pd.DataFrame(mock_data))
+        return DataFrame(
+            file_path="dummy.csv",
+            separator=",",
+            decimal=".",
+            header=False,
+            names=DEFAULT_NAMES,
+        )
+
+    return _make
 
 
-@patch("pandas.read_csv")
-def test_dataframe_describe(mock_read_csv):
-    # Prepare mock data
-    mock_data = {
-        "sepal_length": [5.1, 4.9, 4.7],
-        "sepal_width": [3.5, 3.0, 3.2],
-        "petal_length": [1.4, 1.4, 1.3],
-        "petal_width": [0.2, 0.2, 0.2],
-        "target": [0, 0, 0],
-    }
-    mock_read_csv.return_value = pd.DataFrame(mock_data)
+def test_dataframe_loads_csv(df_factory):
+    df = df_factory(MOCK_SMALL)
+    assert df.df.equals(pd.DataFrame(MOCK_SMALL))
 
-    # Test the describe method
-    df = DataFrame(
-        file_path="dummy.csv",
-        separator=",",
-        decimal=".",
-        header=False,
-        names=["sepal_length", "sepal_width", "petal_length", "petal_width", "target"],
-    )
-    assert df.describe().equals(pd.DataFrame(mock_data).describe())
+
+def test_dataframe_head(df_factory):
+    df = df_factory(MOCK_STANDARD)
+    assert df.head(2).equals(pd.DataFrame(MOCK_STANDARD).head(2))
+
+
+def test_dataframe_tail(df_factory):
+    df = df_factory(MOCK_STANDARD)
+    assert df.tail(2).equals(pd.DataFrame(MOCK_STANDARD).tail(2))
+
+
+def test_dataframe_describe(df_factory):
+    df = df_factory(MOCK_STANDARD)
+    assert df.describe().equals(pd.DataFrame(MOCK_STANDARD).describe())

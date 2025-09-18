@@ -1,6 +1,11 @@
-name: pre-commit
+name: Pre-commit check
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   pre-commit:
@@ -11,7 +16,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install pre-commit
-        run: pip install pre-commit
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       - name: Run pre-commit
         run: pre-commit run --all-files

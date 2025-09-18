@@ -37,4 +37,13 @@ repos:
     rev: 1.8.6
     hooks:
       - id: bandit
-        args: ["-r", "app/", "-f", "json", "-o", "bandit-report.json"]
+        args: ["-r", "source/", "-f", "json", "-o", "bandit-report.json"]
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run pytest
+        entry: bash -c 'PYTHONPATH=. pytest --cov=source'
+        language: system
+        pass_filenames: false

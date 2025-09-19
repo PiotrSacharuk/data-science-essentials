@@ -29,6 +29,10 @@ MANIFEST
 
 # Jupyter Notebook
 .ipynb_checkpoints
+notebooks/**/.ipynb_checkpoints/
+notebooks/**/untitled*.ipynb
+notebooks/**/Untitled*.ipynb
+*.ipynb_checkpoints
 
 # Pytest
 .cache/
@@ -74,6 +78,50 @@ Thumbs.db
 # Logs
 *.log
 
-# CSV files
-*.csv
+# Data files - exclude raw data but include processed
+data/processed/*
+!data/processed/.gitkeep
+
+# Reports and figures
+reports/figures/*.png
+reports/figures/*.jpg
+reports/figures/*.pdf
+!reports/figures/.gitkeep
+
+# Model artifacts
+models/
+*.pkl
+*.joblib
+
+# Notebooks output
+notebooks/**/*.html
+notebooks/**/*.pdf
+
+# Large CSV files (uncomment if needed)
+# *.csv
+
+# Bandit security report
 bandit-report.json
+
+# Data files - exclude raw data downloads
+data/raw/*.csv
+data/raw/*.json
+data/raw/*.xlsx
+data/raw/*.parquet
+!data/raw/.gitkeep
+
+# Large model files
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pt
+!models/.gitkeep
+
+# Environment files
+.env
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+htmlcov/

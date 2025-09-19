@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 
@@ -15,7 +15,7 @@ class PandasDataReader:
         separator (str): Column separator character
         decimal (str): Decimal point character
         header (bool): Whether the file has a header row
-        names (list): Column names to use
+        names (List[str]): Column names to use
         df (pd.DataFrame): The loaded DataFrame
     """
 
@@ -25,7 +25,7 @@ class PandasDataReader:
         separator: str = ",",
         decimal: str = ".",
         header: bool = False,
-        names: Optional[list] = None,
+        names: Optional[List[str]] = None,
     ):
         """
         Initialize PandasDataReader with CSV file parameters.
@@ -35,7 +35,7 @@ class PandasDataReader:
             separator (str, optional): Field delimiter. Defaults to ",".
             decimal (str, optional): Character used as decimal point. Defaults to ".".
             header (bool, optional): Whether file has column headers. Defaults to False.
-            names (list, optional): List of column names to use. Defaults to None.
+            names (List[str], optional): List of column names to use. Defaults to None.
         """
         self.file_path = file_path
         self.separator = separator

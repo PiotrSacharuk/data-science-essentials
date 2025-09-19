@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 
 
-class DataReader:
+class PandasDataReader:
     """
     A utility class for reading and processing CSV files using pandas.
 
@@ -28,7 +28,7 @@ class DataReader:
         names: Optional[list] = None,
     ):
         """
-        Initialize DataReader with CSV file parameters.
+        Initialize PandasDataReader with CSV file parameters.
 
         Args:
             file_path (str): Path to the CSV file to read

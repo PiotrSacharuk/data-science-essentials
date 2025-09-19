@@ -10,7 +10,6 @@ Usage:
     python setup.py
 """
 
-import os
 import sys
 import urllib.error
 import urllib.request
@@ -32,7 +31,7 @@ class ProjectSetup:
 
     def _load_config(self) -> Any:
         """Load configuration from YAML file."""
-        config_path = Path(os.path.join(self.project_root, "config.yaml"))
+        config_path = self.project_root / "config.yaml"
 
         # If config file doesn't exist, exit with error
         if not config_path.exists():
@@ -57,7 +56,7 @@ class ProjectSetup:
         print("Creating project directory structure...")
 
         for directory in self.directories:
-            dir_path = Path(os.path.join(self.project_root, directory))
+            dir_path = self.project_root / directory
             dir_path.mkdir(parents=True, exist_ok=True)
             print(f"  Created: {directory}")
 
@@ -67,8 +66,8 @@ class ProjectSetup:
         """Download a single dataset."""
         url = dataset["url"]
         filename = dataset["filename"]
-        destination = Path(os.path.join(self.project_root, dataset["destination"]))
-        file_path = Path(os.path.join(destination, filename))
+        destination = self.project_root / dataset["destination"]
+        file_path = destination / filename
 
         # Create destination directory if it doesn't exist
         destination.mkdir(parents=True, exist_ok=True)
@@ -139,10 +138,7 @@ class ProjectSetup:
         """Run complete project setup."""
         print("Setting up Data Science Essentials project...")
         print(f"Project root: {self.project_root}")
-        print(
-            "Using configuration from: "
-            f"{Path(os.path.join(self.project_root, 'config.yaml'))}"
-        )
+        print(f"Using configuration from: {self.project_root / 'config.yaml'}")
         print("=" * 50)
 
         try:

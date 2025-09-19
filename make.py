@@ -51,7 +51,7 @@ class ProjectManager:
     def setup(self) -> None:
         """Set up project structure and download data."""
         print("Setting up project...")
-        setup_script = Path(os.path.join(self.project_root, "setup.py"))
+        setup_script = self.project_root / "setup.py"
         if setup_script.exists():
             self.run_command([self.python, str(setup_script)])
         else:
@@ -64,7 +64,7 @@ class ProjectManager:
         requirements_files = ["requirements.txt"]
 
         for req_file in requirements_files:
-            req_path = Path(os.path.join(self.project_root, req_file))
+            req_path = self.project_root / req_file
             if req_path.exists():
                 self.run_command(
                     [self.python, "-m", "pip", "install", "-r", str(req_path)]
@@ -130,9 +130,7 @@ class ProjectManager:
     def download_data(self) -> None:
         """Download datasets."""
         print("Downloading datasets...")
-        download_script = Path(
-            os.path.join(self.project_root, "helpers", "download_csv.py")
-        )
+        download_script = self.project_root / "helpers" / "download_csv.py"
         if download_script.exists():
             self.run_command([self.python, str(download_script)])
         else:

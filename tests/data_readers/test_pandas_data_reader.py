@@ -1,5 +1,5 @@
 """
-Tests for the PandasDataReader class in pandas_utils.read_data module.
+Tests for the PandasDataReader class in data_readers.pandas_data_reader module.
 
 This module contains comprehensive tests for CSV data reading functionality
 including various configurations and edge cases.
@@ -8,7 +8,7 @@ including various configurations and edge cases.
 import pandas as pd
 import pytest
 
-from source.pandas_utils.read_data import PandasDataReader
+from source.data_readers.pandas_data_reader import PandasDataReader
 
 # Shared column names used in tests
 DEFAULT_NAMES = [

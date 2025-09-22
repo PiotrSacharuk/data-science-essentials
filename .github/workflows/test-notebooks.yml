@@ -1,0 +1,77 @@
+name: Test Jupyter Notebooks
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'notebooks/**/*.ipynb'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'notebooks/**/*.ipynb'
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  test-notebooks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f notebook-requirements.txt ]; then pip install -r notebook-requirements.txt; fi
+
+    - name: Create data directories and download datasets
+      run: |
+        python setup.py
+
+    - name: Execute notebooks with papermill
+      run: |
+        # Create output directory
+        mkdir -p notebook_outputs
+
+        # Function to execute a notebook
+        execute_notebook() {
+          local nb=$1
+          local output_path="notebook_outputs/$(basename $nb)"
+          echo "Executing $nb -> $output_path"
+
+          papermill "$nb" "$output_path" --report-mode || {
+            echo "Notebook $nb execution failed"
+            exit 1
+          }
+        }
+
+        # Process all notebooks
+        find notebooks -name "*.ipynb" -type f -print0 | while IFS= read -r -d $'\0' nb; do
+          execute_notebook "$nb"
+        done
+
+        echo "All notebooks executed successfully!"
+
+    - name: Generate HTML reports
+      if: always()  # Run even if previous step fails
+      run: |
+        # Convert executed notebooks to HTML
+        mkdir -p notebook_reports
+
+        for nb in notebook_outputs/*.ipynb; do
+          output_html="notebook_reports/$(basename $nb .ipynb).html"
+          jupyter nbconvert --to html "$nb" --output "$output_html"
+        done
+
+    - name: Archive notebook reports
+      if: always()  # Run even if previous steps fail
+      uses: actions/upload-artifact@v4
+      with:
+        name: notebook-reports
+        path: notebook_reports

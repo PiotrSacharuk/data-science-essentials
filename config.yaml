@@ -1,0 +1,29 @@
+# Project Configuration
+
+# Directories to create (relative to project root)
+directories:
+  - data/raw
+  - data/processed
+  - data/external
+  - notebooks/exploratory
+  - notebooks/reports
+  - reports/figures
+  - reports/tables
+  - models
+  - logs
+
+# Datasets to download
+datasets:
+  - name: iris
+    url: https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
+    filename: iris.csv
+    destination: data/raw
+  # Add more datasets here:
+  # - name: boston_housing
+  #   url: https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data
+  #   filename: boston_housing.csv
+  #   destination: data/raw
+
+# Default parameters
+params:
+  random_seed: 42

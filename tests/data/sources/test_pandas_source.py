@@ -1,14 +1,11 @@
 """
-Tests for the PandasDataReader class in data_readers.pandas_data_reader module.
-
-This module contains comprehensive tests for CSV data reading functionality
-including various configurations and edge cases.
+Tests for the PandasSource class in src.data.sources.pandas_source module.
 """
 
 import pandas as pd
 import pytest
 
-from source.data_readers.pandas_data_reader import PandasDataReader
+from src.data.sources.pandas_source import PandasSource
 
 # Shared column names used in tests
 DEFAULT_NAMES = [
@@ -48,7 +45,7 @@ def df_factory(monkeypatch):
 
     def _make(mock_data):
         monkeypatch.setattr(pd, "read_csv", lambda *a, **k: pd.DataFrame(mock_data))
-        return PandasDataReader(
+        return PandasSource(
             file_path="dummy.csv",
             separator=",",
             decimal=".",
@@ -77,3 +74,11 @@ def test_dataframe_tail(df_factory):
 def test_dataframe_describe(df_factory):
     df = df_factory(MOCK_STANDARD)
     assert df.describe().equals(pd.DataFrame(MOCK_STANDARD).describe())
+
+
+def test_metadata(df_factory):
+    df = df_factory(MOCK_STANDARD)
+    metadata = df.metadata
+    assert metadata["columns"] == DEFAULT_NAMES
+    assert metadata["shape"] == (3, 5)
+    assert "dtypes" in metadata

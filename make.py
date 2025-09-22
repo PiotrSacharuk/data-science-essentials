@@ -58,7 +58,7 @@ class ProjectManager:
             print("setup.py not found!")
             sys.exit(1)
 
-    def install(self, dev: bool = False) -> None:
+    def install(self) -> None:
         """Install dependencies."""
         print("Installing dependencies...")
         requirements_files = ["requirements.txt"]

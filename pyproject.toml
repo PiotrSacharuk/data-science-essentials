@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data-science-essentials"
+version = "0.1.0"
+description = "Essential tools for data science"
+readme = "README.md"
+authors = [
+    {name = "PiotrSacharuk"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pandas>=1.3.0",
+    "numpy>=1.20.0",
+    "matplotlib>=3.4.0",
+    "pytest>=6.2.5",
+]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+# Manual package listing:
+# packages = ["src", "src.data", "src.data.sources", "src.data.processors", "src.utils"]
+# Automatic package discovery:
+packages.find = {where = ["src"]}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"

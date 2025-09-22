@@ -2,6 +2,45 @@
 
 A professional Python project template for data science workflows with best practices, testing, and automated setup.
 
+## Project Structure
+
+This project has been restructured to better support future development with FastAPI and modular data processing.
+
+```
+/
+├── app/                          # FastAPI application (future)
+│   ├── __init__.py
+│   └── api/                      # API endpoints
+│       └── __init__.py
+│
+├── src/                          # Source code library
+│   ├── __init__.py
+│   ├── data/                     # Data modules
+│   │   ├── __init__.py
+│   │   ├── sources/              # Data sources (e.g., CSV loading)
+│   │   │   ├── __init__.py
+│   │   │   └── pandas_source.py  # PandasSource implementation
+│   │   └── processors/           # Data processors (future)
+│   │       └── __init__.py
+│   └── utils/                    # Utility tools
+│       └── __init__.py
+│
+├── tests/                        # Tests
+│   ├── __init__.py
+│   └── data/                     # Tests for data modules
+│       ├── __init__.py
+│       └── sources/              # Tests for data sources
+│           ├── __init__.py
+│           └── test_pandas_source.py
+│
+├── data/                         # Data directory
+│   ├── raw/                      # Raw data
+│   └── processed/                # Processed data
+│
+├── notebooks/                    # Jupyter Notebooks
+│   └── exploratory/
+```
+
 ## Quick Start
 
 ### 1. Clone and Setup
@@ -31,23 +70,6 @@ python make.py test
 
 # Start Jupyter Lab
 python make.py notebook
-```
-
-## Project Structure
-
-```
-data-science-essentials/
-├── notebooks/             # Jupyter notebooks organized by purpose
-│   ├── exploratory/       # Data exploration and analysis
-│   └── reports/           # Final reports for stakeholders (if needed)
-├── data/                  # Data storage (not in repo)
-│   ├── raw/               # Original, immutable datasets
-│   └── processed/         # Cleaned, transformed data
-├── source/                # Source code for production
-│   └── data_readers/      # Data loading utilities
-├── tests/                 # Unit tests
-├── reports/               # Generated reports and figures
-├── helpers/               # Utility scripts
 ```
 
 ## Development Commands
@@ -82,29 +104,25 @@ python make.py test
 python make.py test-cov
 
 # Run specific test file
-pytest tests/data_readers/test_pandas_data_reader.py -v
+pytest tests/data/sources/test_pandas_source.py -v
 ```
 
-## Using the Data Readers
+## Using the Data Sources API
 
 ```python
-from source.data_readers.pandas_data_reader import PandasDataReader
+from src.data.sources import PandasSource
 
-# Load data with proper error handling
-import os
+# Load data from CSV
+data_source = PandasSource(
+    file_path="data/raw/iris.csv",
+    separator=",",
+    header=False,
+    names=["sepal_length", "sepal_width", "petal_length", "petal_width", "target"]
+)
 
-file_path = 'data/raw/iris.csv'
-if os.path.exists(file_path):
-    # Using PandasDataReader
-    reader = PandasDataReader(
-        file_path=file_path,
-        separator=',',
-        header=0
-    )
-    df = reader.read_csv_file()
-    print(df.head())
-else:
-    print(f"Warning: File {file_path} does not exist.")
+# Explore data
+print(data_source.head())
+print(data_source.describe())
 ```
 
 ## Jupyter Notebooks
@@ -115,17 +133,6 @@ python make.py notebook
 ```
 
 See [`notebooks/README.md`](notebooks/README.md) for detailed guidelines and best practices.
-
-## Pre-commit Hooks
-
-Install git hooks for code quality:
-
-```bash
-pre-commit install
-
-# Run manually on all files
-pre-commit run --all-files
-```
 
 ## Project Configuration
 
@@ -158,6 +165,17 @@ datasets:
 
 To add a new dataset, simply edit `config.yaml` and run `python setup.py` again.
 
+## Pre-commit Hooks
+
+Install git hooks for code quality:
+
+```bash
+pre-commit install
+
+# Run manually on all files
+pre-commit run --all-files
+```
+
 ## Features
 
 - **Professional Structure** - Industry-standard project organization
@@ -168,10 +186,12 @@ To add a new dataset, simply edit `config.yaml` and run `python setup.py` again.
 - **Documentation** - Comprehensive docs and examples
 - **Configuration-Driven** - External YAML configuration file for easy customization
 
-## Future-Ready
+## Future Development
 
-This structure is designed to scale with your project:
-
+This structure is designed to support:
+- FastAPI integration for data processing via API
+- Modular data processing pipelines
+- Clear separation of data sources and processors
 - **Team Collaboration** - Clear conventions and documentation
 - **Extensible Design** - Easy to add new components
 - **Maintainable Code** - Clean separation of concerns

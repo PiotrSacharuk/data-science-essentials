@@ -2,11 +2,11 @@ name: Test Jupyter Notebooks
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
     paths:
       - 'notebooks/**/*.ipynb'
   pull_request:
-    branches: [ main, master ]
+    branches: [ master ]
     paths:
       - 'notebooks/**/*.ipynb'
   workflow_dispatch:  # Allows manual triggering
@@ -32,6 +32,16 @@ jobs:
 
     - name: Create data directories and download datasets
       run: |
+        # Make sure data directories exist
+        mkdir -p data/raw data/processed
+
+        # Download Iris dataset directly if not exists
+        if [ ! -f data/raw/iris.csv ]; then
+          echo "Downloading Iris dataset..."
+          curl -o data/raw/iris.csv https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
+        fi
+
+        # Run setup script for additional datasets
         python setup.py
 
     - name: Execute notebooks with papermill
@@ -45,7 +55,8 @@ jobs:
           local output_path="notebook_outputs/$(basename $nb)"
           echo "Executing $nb -> $output_path"
 
-          papermill "$nb" "$output_path" --report-mode || {
+          # Execute notebook from the root directory to ensure paths work correctly
+          papermill "$nb" "$output_path" --cwd $(pwd) --report-mode || {
             echo "Notebook $nb execution failed"
             exit 1
           }
@@ -65,8 +76,8 @@ jobs:
         mkdir -p notebook_reports
 
         for nb in notebook_outputs/*.ipynb; do
-          output_html="notebook_reports/$(basename $nb .ipynb).html"
-          jupyter nbconvert --to html "$nb" --output "$output_html"
+          basename=$(basename $nb .ipynb)
+          jupyter nbconvert --to html "$nb" --output-dir="notebook_reports" --output="${basename}"
         done
 
     - name: Archive notebook reports

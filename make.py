@@ -79,9 +79,7 @@ class ProjectManager:
 
         if coverage:
             print("Running tests with coverage...")
-            cmd.extend(
-                ["--cov=source", "--cov-report=term-missing", "--cov-report=html"]
-            )
+            cmd.extend(["--cov=src", "--cov-report=term-missing", "--cov-report=html"])
         else:
             print("Running tests...")
             cmd.append("-v")

@@ -22,8 +22,14 @@ This project has been restructured to better support future development with Fas
 │   │   │   └── pandas_source.py  # PandasSource implementation
 │   │   └── processors/           # Data processors (future)
 │   │       └── __init__.py
-│   └── utils/                    # Utility tools
-│       └── __init__.py
+│   └── utils/                    # Utility modules
+│       ├── __init__.py
+│       ├── cache/                # Cache management utilities
+│       │   ├── __init__.py
+│       │   └── cache_manager.py  # File caching with concurrent protection
+│       └── network/              # Network utilities
+│           ├── __init__.py
+│           └── url_utils.py      # URL validation and processing
 │
 ├── tests/                        # Tests
 │   ├── __init__.py
@@ -71,6 +77,79 @@ python make.py test
 # Start Jupyter Lab
 python make.py notebook
 ```
+
+## Data Processing with PandasSource
+
+The `PandasSource` class provides a unified interface for working with CSV data from both local files and remote URLs, with automatic caching and concurrent access protection.
+
+### Features
+
+- **Unified Interface**: Same API for local files and remote URLs
+- **Automatic Caching**: Downloads are cached locally for faster subsequent access
+- **Concurrent Protection**: Safe to use in multi-process environments
+- **Flexible Configuration**: Support for various CSV formats and parameters
+
+### Usage Examples
+
+#### Local Files
+```python
+from src.data.sources.pandas_source import PandasSource
+
+# Load local CSV file
+source = PandasSource('data/raw/iris.csv', header=True)
+print(f"Data shape: {source.df.shape}")
+print(source.head())
+```
+
+#### Remote URLs
+```python
+# Load data from URL (automatically cached)
+iris_url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
+column_names = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+
+source = PandasSource(iris_url, names=column_names)
+print(f"Loaded from: {source.original_source}")
+print(f"Cached at: {source.file_path}")
+print(source.describe())
+```
+
+#### Advanced Configuration
+```python
+# Custom separator and cache directory
+source = PandasSource(
+    'https://example.com/data.csv',
+    separator=';',
+    decimal=',',
+    header=True,
+    cache_dir='custom_cache',
+    timeout=60
+)
+
+# Get metadata about the data source
+metadata = source.metadata
+print(f"Source type: {metadata['source_type']}")
+print(f"Shape: {metadata['shape']}")
+```
+
+#### Cache Management
+```python
+# Refresh cached data (re-download from URL)
+source.refresh_cache()
+
+# Check cache status
+if source.is_url:
+    print(f"Cache directory: {source.cache_dir}")
+    print(f"Is cached: {source.metadata['is_cached']}")
+```
+
+### Architecture
+
+The PandasSource implementation is built on modular utilities:
+
+- **`src.utils.network.url_utils`**: URL validation and cache path generation
+- **`src.utils.cache.cache_manager`**: Robust file caching with concurrent access protection
+- **Atomic Operations**: Downloads use temporary files and atomic moves
+- **File Locking**: Prevents concurrent download conflicts
 
 ## Development Commands
 

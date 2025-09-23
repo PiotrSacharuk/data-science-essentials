@@ -24,7 +24,7 @@ class PandasSource:
         df (pd.DataFrame): The loaded DataFrame
         is_url (bool): Whether the source is a URL
         cache_manager (Optional[CacheManager]): Cache manager for URL sources,
-                                                None for local files
+            None for local files
     """
 
     # Type annotations for instance attributes
@@ -50,9 +50,9 @@ class PandasSource:
             header (bool, optional): Whether file has column headers. Defaults to False.
             names (List[str], optional): List of column names to use. Defaults to None.
             cache_dir (str, optional): Directory for caching downloaded files.
-                                       Defaults to "data/cache".
+                Defaults to "data/cache".
             timeout (int, optional): Timeout for URL downloads in seconds.
-                                      Defaults to 30.
+                Defaults to 30.
         """
         self.original_source = str(file_path)
         self.separator = separator

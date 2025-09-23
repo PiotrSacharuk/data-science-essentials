@@ -107,6 +107,8 @@ class ProjectManager:
             "build",
             "*.egg-info",
             ".ipynb_checkpoints",
+            "data/cache",
+            "notebooks/**/data/cache",
         ]
 
         cleaned = 0

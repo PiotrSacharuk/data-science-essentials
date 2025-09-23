@@ -58,8 +58,9 @@ class TestIsUrl:
 
     def test_malformed_urls(self):
         """Test malformed URLs that might cause exceptions."""
-        # Note: urlparse is quite forgiving, so some "malformed" URLs still parse
-        assert is_url("http://[invalid]") is True  # urlparse accepts this
+        # Test URLs that might cause parsing issues (handled gracefully)
+        assert is_url("http://") is False  # No netloc
+        assert is_url("http:///path") is False  # Empty netloc
         # Test with None (handled gracefully by except clause)
         assert is_url(None) is False
 
@@ -220,8 +221,9 @@ class TestValidateUrl:
 
     def test_exception_handling(self):
         """Test that exceptions are handled gracefully."""
-        # urlparse is quite forgiving, so this actually parses successfully
-        assert validate_url("http://[invalid-bracket]") is True  # urlparse accepts this
+        # Test URLs that cause consistent validation failures
+        assert validate_url("http://") is False  # No netloc
+        assert validate_url("not-a-url-at-all") is False  # Invalid format
 
         # Test with None (handled gracefully by except clause)
         assert validate_url(None) is False

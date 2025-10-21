@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.14'
       - name: Install test tools
         run: pip install -r requirements.txt pytest-json-report requests
       - name: Run tests and generate JSON report

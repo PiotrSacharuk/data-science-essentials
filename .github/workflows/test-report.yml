@@ -26,7 +26,7 @@ jobs:
         run: pip install -r requirements.gha.txt
       - name: Run tests and generate JSON report
         run: |
-          pytest --json-report --json-report-file=report.json --cov=source --cov-report=term > coverage_report.txt 2>&1 || true
+          pytest --json-report --json-report-file=report.json > coverage_report.txt 2>&1 || true
           cat coverage_report.txt
       - name: Post test report to PR
         if: always()

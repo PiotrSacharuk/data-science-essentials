@@ -161,6 +161,7 @@ python make.py setup          # Complete project setup
 python make.py install        # Install dependencies
 
 # Development
+python make.py run            # Start FastAPI development server
 python make.py test           # Run tests
 python make.py test-cov       # Run tests with coverage
 python make.py clean          # Clean temporary files

@@ -2,7 +2,7 @@ name: Build Container
 
 on:
   push:
-    branches: [master]
+    branches: [master, dockerfile_for_gha]
     paths:
       - 'Dockerfile'
       - 'requirements.gha.txt'

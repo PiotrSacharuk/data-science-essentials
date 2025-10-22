@@ -104,6 +104,7 @@ notebooks/**/*.pdf
 bandit-report.json
 
 # Data files - exclude raw data downloads
+data/*
 data/raw/*.csv
 data/raw/*.json
 data/raw/*.xlsx

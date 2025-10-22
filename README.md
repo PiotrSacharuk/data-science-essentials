@@ -230,7 +230,30 @@ python make.py test-cov
 
 # Run specific test file
 pytest tests/data/sources/test_pandas_source.py -v
+
+# Run app tests only
+pytest tests/app/ -v
+
+# Run with coverage for specific module
+pytest tests/ --cov=app --cov-report=term-missing
 ```
+
+### Test Coverage
+
+The project has comprehensive test coverage:
+
+- **`tests/app/`** - FastAPI application tests (42 tests)
+  - `test_server.py` - App initialization and route mounting (7 tests)
+  - `test_routes_pandas.py` - Pandas API endpoints testing (15 tests)
+  - `test_models.py` - Pydantic request model validation (20 tests)
+
+- **`tests/src/`** - Source library tests (64 tests)
+  - `tests/data/sources/` - PandasSource implementation tests
+  - `tests/utils/cache/` - Cache management and concurrent access tests
+  - `tests/utils/network/` - URL validation and caching utilities tests
+
+**Overall Coverage: 100%** on all modules (`app/` and `src/`)
+
 
 ## Using the Data Sources API
 

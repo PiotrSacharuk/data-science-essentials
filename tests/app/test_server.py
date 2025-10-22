@@ -55,8 +55,6 @@ class TestAppHealthCheck:
 
     def test_app_startup(self, client):
         """Test that app can handle requests after startup."""
-        # Simple request to verify app is working
-        # We'll use OpenAPI schema endpoint as a health check
         response = client.get("/openapi.json")
         assert response.status_code == 200
 

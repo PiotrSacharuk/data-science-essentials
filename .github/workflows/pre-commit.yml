@@ -1,11 +1,19 @@
 name: Pre-commit check
 
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
       - master
+      - dockerfile_for_gha
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["Build Container"]
+    types: [completed]
 
 jobs:
   prepare:

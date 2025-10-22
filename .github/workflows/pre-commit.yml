@@ -1,14 +1,8 @@
 name: Pre-commit check
 
-concurrency:
-  group: checks-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
-  push:
-    branches: [master]
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [master]
   workflow_run:
     workflows: ["Build Container"]
     types: [completed]
@@ -26,6 +20,7 @@ jobs:
   pre-commit:
     needs: prepare
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event.workflow_run.conclusion == 'success'
     container:
       image: ${{ needs.prepare.outputs.image_name }}:latest
       credentials:

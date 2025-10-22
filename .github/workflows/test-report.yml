@@ -5,10 +5,6 @@ permissions:
   issues: write
   pull-requests: write
 
-concurrency:
-  group: checks-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   pull_request:
     branches: [master]
@@ -29,6 +25,7 @@ jobs:
   test:
     needs: prepare
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event.workflow_run.conclusion == 'success'
     container:
       image: ${{ needs.prepare.outputs.image_name }}:latest
       credentials:

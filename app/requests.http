@@ -1,8 +1,0 @@
-### Good request
-POST http://localhost:8000/data/load
-
-{
-    "source_url": "https://raw.githubusercontent.com/plotly/datasets/master/tips.csv",
-    "separator": ",",
-    "header": true
-}

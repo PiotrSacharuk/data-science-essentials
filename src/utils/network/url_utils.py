@@ -42,7 +42,7 @@ def generate_cache_filename(url: str, extension: str = ".csv") -> str:
     Returns:
         str: Generated cache filename
     """
-    url_hash = hashlib.md5(url.encode()).hexdigest()
+    url_hash = hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()
     return f"cached_{url_hash}{extension}"
 
 
@@ -88,8 +88,12 @@ def validate_url(url: str, allowed_schemes: Optional[list] = None) -> bool:
         if result.scheme not in allowed_schemes:
             return False
 
-        # Basic security checks
-        if result.netloc.lower() in ["localhost", "127.0.0.1", "0.0.0.0"]:
+        # Basic security checks - reject localhost/loopback
+        if result.netloc.lower() in [
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",
+        ]:  # nosec: B104
             return False
 
         return True

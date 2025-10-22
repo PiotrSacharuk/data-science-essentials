@@ -2,8 +2,9 @@ FROM python:3.14-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (including build tools for pandas)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     git \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,4 +21,5 @@ COPY . .
 ENV PYTHONPATH=/app
 
 # Default command
+CMD ["bash"]
 CMD ["bash"]

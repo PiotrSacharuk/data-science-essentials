@@ -33,5 +33,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize git (for pre-commit)
+        run: git init && git config user.email "ci@example.com" && git config user.name "CI"
       - name: Run pre-commit
         run: pre-commit run --all-files

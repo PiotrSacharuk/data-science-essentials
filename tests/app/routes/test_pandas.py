@@ -5,6 +5,7 @@ Tests for the Pandas routes in app.routes.pandas module.
 import tempfile
 from http import HTTPStatus
 from pathlib import Path
+from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,31 +14,57 @@ from app.server import app
 
 
 @pytest.fixture
-def client():
+def client() -> TestClient:
     """Provide a TestClient for the FastAPI app."""
     return TestClient(app)
 
 
-@pytest.fixture
-def sample_csv_path():
-    """Create a sample CSV file for testing."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
-        f.write("name,age,city\n")
-        f.write("Alice,30,NYC\n")
-        f.write("Bob,25,LA\n")
-        f.write("Charlie,35,Chicago\n")
+def create_csv_file(content: str, suffix: str = ".csv") -> Generator[str, None, None]:
+    """Helper to create temporary CSV files.
+
+    Args:
+        content: CSV content to write
+        suffix: File suffix (default: .csv)
+
+    Yields:
+        Path to temporary file, cleaned up after use
+    """
+    with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False) as f:
+        f.write(content)
         path = f.name
     yield path
-    # Cleanup
     Path(path).unlink()
 
 
 @pytest.fixture
-def iris_csv_url():
-    """Provide a URL to the Iris dataset."""
-    return (
-        "https://raw.githubusercontent.com/pandas-dev/pandas/main/doc/data/titanic.csv"
-    )
+def sample_csv_path() -> Generator[str, None, None]:
+    """Provide path to sample CSV file with default separator."""
+    content = "name,age,city\nAlice,30,NYC\nBob,25,LA\nCharlie,35,Chicago\n"
+    yield from create_csv_file(content)
+
+
+@pytest.fixture
+def sample_csv_semicolon() -> Generator[str, None, None]:
+    """Provide path to sample CSV file with semicolon separator."""
+    content = "name;age;city\nAlice;30;NYC\nBob;25;LA\n"
+    yield from create_csv_file(content)
+
+
+def assert_success_response(response, status_code: HTTPStatus = HTTPStatus.OK) -> dict:
+    """Assert successful response and return data.
+
+    Args:
+        response: FastAPI test response
+        status_code: Expected HTTP status code
+
+    Returns:
+        Response JSON data
+    """
+    assert response.status_code == status_code
+    data = response.json()
+    if status_code == HTTPStatus.OK:
+        assert data["status"] == "success"
+    return data
 
 
 class TestLoadDataEndpoint:
@@ -45,137 +72,81 @@ class TestLoadDataEndpoint:
 
     def test_load_data_with_local_file(self, client, sample_csv_path):
         """Test loading data from a local file URL."""
-        request_data = {
-            "source_url": f"file://{sample_csv_path}",
-            "separator": ",",
-            "header": True,
-        }
+        request_data = {"source_url": f"file://{sample_csv_path}"}
         response = client.post("/data/load", json=request_data)
 
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert data["status"] == "success"
-        assert data["shape"] == [3, 3]  # Shape is returned as list in JSON
+        data = assert_success_response(response)
+        assert data["shape"] == [3, 3]
         assert set(data["columns"]) == {"name", "age", "city"}
         assert len(data["preview"]) == 3
 
     def test_load_data_invalid_url(self, client):
         """Test loading data with invalid URL."""
+        request_data = {"source_url": "http://invalid-domain-xyz-12345.com/file.csv"}
+        response = client.post("/data/load", json=request_data)
+        assert_success_response(response, HTTPStatus.BAD_REQUEST)
+
+    def test_load_data_custom_separator(self, client, sample_csv_semicolon):
+        """Test loading data with custom separator."""
         request_data = {
-            "source_url": "http://invalid-domain-xyz-12345.com/file.csv",
-            "separator": ",",
-            "header": True,
+            "source_url": f"file://{sample_csv_semicolon}",
+            "separator": ";",
         }
         response = client.post("/data/load", json=request_data)
 
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        data = response.json()
-        assert "detail" in data
-
-    def test_load_data_custom_separator(self, client):
-        """Test loading data with custom separator."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
-            f.write("name;age;city\n")
-            f.write("Alice;30;NYC\n")
-            f.write("Bob;25;LA\n")
-            path = f.name
-
-        try:
-            request_data = {
-                "source_url": f"file://{path}",
-                "separator": ";",
-                "header": True,
-            }
-            response = client.post("/data/load", json=request_data)
-
-            assert response.status_code == HTTPStatus.OK
-            data = response.json()
-            assert set(data["columns"]) == {"name", "age", "city"}
-        finally:
-            Path(path).unlink()
+        data = assert_success_response(response)
+        assert set(data["columns"]) == {"name", "age", "city"}
 
     def test_load_data_missing_source_url(self, client):
         """Test loading data without source_url (required field)."""
-        request_data = {"separator": ",", "header": True}
-        response = client.post("/data/load", json=request_data)
-
-        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        response = client.post("/data/load", json={})
+        assert_success_response(response, HTTPStatus.UNPROCESSABLE_ENTITY)
 
     def test_load_data_default_parameters(self, client, sample_csv_path):
         """Test loading data with default parameters."""
         request_data = {"source_url": f"file://{sample_csv_path}"}
         response = client.post("/data/load", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert data["status"] == "success"
+        assert_success_response(response)
 
 
-class TestHeadEndpoint:
-    """Test POST /data/head endpoint."""
+class TestSliceEndpoints:
+    """Test /data/head and /data/tail endpoints."""
 
-    def test_head_default_rows(self, client, sample_csv_path):
-        """Test getting first 5 rows (default)."""
-        request_data = {"source_url": f"file://{sample_csv_path}"}
-        response = client.post("/data/head", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert data["status"] == "success"
+    @pytest.mark.parametrize("endpoint", ["/data/head", "/data/tail"])
+    def test_default_rows(self, client, sample_csv_path, endpoint):
+        """Test getting rows with default n=5."""
+        response = client.post(
+            endpoint, json={"source_url": f"file://{sample_csv_path}"}
+        )
+        data = assert_success_response(response)
         assert len(data["data"]) == 3  # File has only 3 rows
 
-    def test_head_custom_n(self, client, sample_csv_path):
-        """Test getting first N rows."""
-        request_data = {"source_url": f"file://{sample_csv_path}", "n": 2}
-        response = client.post("/data/head", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
+    @pytest.mark.parametrize(
+        "endpoint,expected_first,expected_second",
+        [
+            ("/data/head", "Alice", "Bob"),
+            ("/data/tail", "Bob", "Charlie"),
+        ],
+    )
+    def test_custom_n(
+        self, client, sample_csv_path, endpoint, expected_first, expected_second
+    ):
+        """Test getting N specific rows from head/tail."""
+        response = client.post(
+            endpoint, json={"source_url": f"file://{sample_csv_path}", "n": 2}
+        )
+        data = assert_success_response(response)
         assert len(data["data"]) == 2
-        assert data["data"][0]["name"] == "Alice"
-        assert data["data"][1]["name"] == "Bob"
+        assert data["data"][0]["name"] == expected_first
+        assert data["data"][1]["name"] == expected_second
 
-    def test_head_n_larger_than_rows(self, client, sample_csv_path):
-        """Test getting more rows than available."""
-        request_data = {"source_url": f"file://{sample_csv_path}", "n": 10}
-        response = client.post("/data/head", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert len(data["data"]) == 3  # Only 3 rows available
-
-
-class TestTailEndpoint:
-    """Test POST /data/tail endpoint."""
-
-    def test_tail_default_rows(self, client, sample_csv_path):
-        """Test getting last 5 rows (default)."""
-        request_data = {"source_url": f"file://{sample_csv_path}"}
-        response = client.post("/data/tail", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert data["status"] == "success"
-        assert len(data["data"]) == 3
-
-    def test_tail_custom_n(self, client, sample_csv_path):
-        """Test getting last N rows."""
-        request_data = {"source_url": f"file://{sample_csv_path}", "n": 2}
-        response = client.post("/data/tail", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert len(data["data"]) == 2
-        assert data["data"][0]["name"] == "Bob"
-        assert data["data"][1]["name"] == "Charlie"
-
-    def test_tail_n_larger_than_rows(self, client, sample_csv_path):
-        """Test getting more rows than available."""
-        request_data = {"source_url": f"file://{sample_csv_path}", "n": 10}
-        response = client.post("/data/tail", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
+    @pytest.mark.parametrize("endpoint", ["/data/head", "/data/tail"])
+    def test_n_larger_than_rows(self, client, sample_csv_path, endpoint):
+        """Test requesting more rows than available."""
+        response = client.post(
+            endpoint, json={"source_url": f"file://{sample_csv_path}", "n": 10}
+        )
+        data = assert_success_response(response)
         assert len(data["data"]) == 3
 
 
@@ -184,46 +155,38 @@ class TestDescribeEndpoint:
 
     def test_describe_statistics(self, client, sample_csv_path):
         """Test getting statistical summary of data."""
-        request_data = {"source_url": f"file://{sample_csv_path}"}
-        response = client.post("/data/describe", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert data["status"] == "success"
+        response = client.post(
+            "/data/describe", json={"source_url": f"file://{sample_csv_path}"}
+        )
+        data = assert_success_response(response)
         assert "statistics" in data
-        # Age column should have statistics (it's numeric)
         assert "age" in data["statistics"]
 
     def test_describe_numeric_columns(self, client, sample_csv_path):
-        """Test that numeric columns have proper statistics."""
-        request_data = {"source_url": f"file://{sample_csv_path}"}
-        response = client.post("/data/describe", json=request_data)
-
-        assert response.status_code == HTTPStatus.OK
-        data = response.json()
+        """Test that numeric columns have statistics."""
+        response = client.post(
+            "/data/describe", json={"source_url": f"file://{sample_csv_path}"}
+        )
+        data = assert_success_response(response)
         stats = data["statistics"]["age"]
-        # Statistics should have count, mean, std, min, max, etc.
-        assert "count" in stats or "50%" in stats or "mean" in stats
+        assert any(key in stats for key in ["count", "50%", "mean"])
 
 
 class TestEndpointErrorHandling:
     """Test error handling across endpoints."""
 
-    def test_all_endpoints_handle_invalid_file(self, client):
-        """Test that all endpoints handle file not found gracefully."""
-        request_data = {"source_url": "file:///nonexistent/path/file.csv"}
-
-        endpoints = ["/data/load", "/data/head", "/data/tail", "/data/describe"]
-
-        for endpoint in endpoints:
-            response = client.post(endpoint, json=request_data)
-            assert (
-                response.status_code == HTTPStatus.BAD_REQUEST
-            ), f"Failed for {endpoint}"
+    @pytest.mark.parametrize(
+        "endpoint",
+        ["/data/load", "/data/head", "/data/tail", "/data/describe"],
+    )
+    def test_all_endpoints_handle_invalid_file(self, client, endpoint):
+        """Test that all endpoints handle missing files gracefully."""
+        response = client.post(
+            endpoint, json={"source_url": "file:///nonexistent/path/file.csv"}
+        )
+        assert_success_response(response, HTTPStatus.BAD_REQUEST)
 
     def test_request_validation_missing_url(self, client):
         """Test that requests without URL are rejected."""
-        request_data = {}
-
-        response = client.post("/data/load", json=request_data)
-        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        response = client.post("/data/load", json={})
+        assert_success_response(response, HTTPStatus.UNPROCESSABLE_ENTITY)

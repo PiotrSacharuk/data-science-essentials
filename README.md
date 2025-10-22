@@ -4,23 +4,30 @@ A professional Python project template for data science workflows with best prac
 
 ## Project Structure
 
-This project has been restructured to better support future development with FastAPI and modular data processing.
+This project has been restructured to better support FastAPI application with modular data processing.
 
 ```
 /
-├── app/                          # FastAPI application (future)
+├── app/                          # FastAPI application
 │   ├── __init__.py
-│   └── api/                      # API endpoints
-│       └── __init__.py
+│   ├── server.py                 # FastAPI app initialization
+│   ├── api/                      # API package
+│   │   └── __init__.py
+│   ├── models/                   # Pydantic request/response models
+│   │   ├── __init__.py
+│   │   └── pandas.py             # Pandas data models
+│   └── routes/                   # API route handlers
+│       ├── __init__.py
+│       └── pandas.py             # Pandas data endpoints
 │
 ├── src/                          # Source code library
 │   ├── __init__.py
 │   ├── data/                     # Data modules
 │   │   ├── __init__.py
-│   │   ├── sources/              # Data sources (e.g., CSV loading)
+│   │   ├── sources/              # Data sources (CSV loading, etc.)
 │   │   │   ├── __init__.py
 │   │   │   └── pandas_source.py  # PandasSource implementation
-│   │   └── processors/           # Data processors (future)
+│   │   └── processors/           # Data processors (placeholder)
 │   │       └── __init__.py
 │   └── utils/                    # Utility modules
 │       ├── __init__.py
@@ -29,22 +36,60 @@ This project has been restructured to better support future development with Fas
 │       │   └── cache_manager.py  # File caching with concurrent protection
 │       └── network/              # Network utilities
 │           ├── __init__.py
-│           └── url_utils.py      # URL validation and processing
+│           └── url_utils.py      # URL validation and MD5 hash generation
 │
-├── tests/                        # Tests
+├── tests/                        # Test suite
 │   ├── __init__.py
-│   └── data/                     # Tests for data modules
+│   ├── conftest.py               # Pytest configuration and fixtures
+│   ├── data/                     # Tests for data modules
+│   │   ├── __init__.py
+│   │   └── sources/
+│   │       ├── __init__.py
+│   │       └── test_pandas_source.py
+│   └── utils/                    # Tests for utility modules
 │       ├── __init__.py
-│       └── sources/              # Tests for data sources
+│       ├── cache/
+│       │   ├── __init__.py
+│       │   └── test_cache_manager.py
+│       └── network/
 │           ├── __init__.py
-│           └── test_pandas_source.py
+│           └── test_url_utils.py
 │
 ├── data/                         # Data directory
-│   ├── raw/                      # Raw data
-│   └── processed/                # Processed data
+│   ├── raw/                      # Raw data (iris.csv)
+│   └── cache/                    # Cached downloaded files
+│
+├── helpers/                      # Helper utilities
+│   └── download_csv.py           # Iris dataset download script
 │
 ├── notebooks/                    # Jupyter Notebooks
+│   ├── README.md
 │   └── exploratory/
+│       ├── 01_iris_data_exploration.ipynb
+│       └── 02_url_data_loading_test.ipynb
+│
+├── .github/                      # GitHub configuration
+│   ├── scripts/
+│   │   └── post_test_report.py   # Test report post-processing script
+│   └── workflows/                # GitHub Actions workflows
+│       ├── pre-commit.yml        # Code quality checks (black, isort, flake8, mypy, bandit, pytest)
+│       ├── test-report.yml       # Test reporting on PRs
+│       └── test-notebooks.yml    # Notebook execution tests
+│
+├── setup.py                      # Project setup and initialization script
+├── make.py                       # Development task runner (setup, install, run, test, etc.)
+├── config.yaml                   # Project configuration (directories, datasets)
+├── .env.example                  # Environment variables template
+├── .pre-commit-config.yaml       # Pre-commit hooks configuration
+├── .coveragerc                   # Coverage report configuration
+├── .gitignore                    # Git ignore rules
+├── pytest.ini                    # Pytest configuration
+├── pyproject.toml                # Python project metadata
+├── requirements.txt              # Project dependencies (full list)
+├── requirements.gha.txt          # Optimized dependencies for GitHub Actions
+├── jupyter-run.sh                # Jupyter notebook launcher script
+├── notebook-requirements.txt     # Jupyter-specific dependencies
+└── README.md                     # This file
 ```
 
 ## Quick Start

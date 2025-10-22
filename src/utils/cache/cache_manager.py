@@ -91,8 +91,8 @@ class CacheManager:
         with tempfile.NamedTemporaryFile(
             mode="wb", delete=False, dir=self.cache_dir, suffix=".tmp"
         ) as temp_file:
-
-            response = urllib.request.urlopen(url, timeout=self.timeout)
+            # URL is already validated by PandasSource
+            response = urllib.request.urlopen(url, timeout=self.timeout)  # nosec: B310
             temp_file.write(response.read())
             temp_file_path = Path(temp_file.name)
 
@@ -129,8 +129,7 @@ class CacheManager:
         """
         try:
             lock_file_path.unlink(missing_ok=True)
-        except Exception:
-            # Ignore cleanup errors
+        except Exception:  # nosec: B110 - cleanup errors should not stop execution
             pass
 
     def remove_cached_file(self, cache_file_path: Path) -> bool:
@@ -163,6 +162,6 @@ class CacheManager:
             for file_path in self.cache_dir.glob("cached_*.csv"):
                 if self.remove_cached_file(file_path):
                     removed_count += 1
-        except Exception:
+        except Exception:  # nosec: B110 - cleanup errors should not stop execution
             pass
         return removed_count

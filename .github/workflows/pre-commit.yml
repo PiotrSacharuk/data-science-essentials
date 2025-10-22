@@ -9,13 +9,13 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository | downcase }}
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/${{ github.repository }}:${{ github.ref == 'refs/heads/main' && 'latest' || github.ref_name }}
+      image: ghcr.io/${{ github.repository | downcase }}:${{ github.ref == 'refs/heads/main' && 'latest' || github.ref_name }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

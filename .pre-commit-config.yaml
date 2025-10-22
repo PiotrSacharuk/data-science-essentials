@@ -43,7 +43,7 @@ repos:
   - repo: local
     hooks:
       - id: pytest
-        name: Run pytest
+        name: pytest
         entry: bash -c 'PYTHONPATH=. pytest --cov=source'
         language: system
         pass_filenames: false

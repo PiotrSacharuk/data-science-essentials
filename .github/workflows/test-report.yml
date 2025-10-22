@@ -22,8 +22,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.14'
-      - name: Install test tools
-        run: pip install pytest pytest-cov pytest-json-report requests
+      - name: Install dependencies
+        run: pip install -r requirements.gha.txt
       - name: Run tests and generate JSON report
         run: |
           pytest --json-report --json-report-file=report.json --cov=source --cov-report=term > coverage_report.txt 2>&1 || true

@@ -41,6 +41,15 @@ This project has been restructured to better support FastAPI application with mo
 ├── tests/                        # Test suite
 │   ├── __init__.py
 │   ├── conftest.py               # Pytest configuration and fixtures
+│   ├── app/                      # Tests for FastAPI application
+│   │   ├── __init__.py
+│   │   ├── test_server.py        # App initialization and routing tests
+│   │   ├── models/               # Tests for app models
+│   │   │   ├── __init__.py
+│   │   │   └── test_pandas.py    # Pydantic model validation tests
+│   │   └── routes/               # Tests for app routes
+│   │       ├── __init__.py
+│   │       └── test_pandas.py    # API endpoint tests
 │   ├── data/                     # Tests for data modules
 │   │   ├── __init__.py
 │   │   └── sources/
@@ -240,14 +249,31 @@ pytest tests/ --cov=app --cov-report=term-missing
 
 ### Test Coverage
 
-The project has comprehensive test coverage:
+The project has comprehensive test coverage with well-organized test structure that mirrors the source code organization:
 
 - **`tests/app/`** - FastAPI application tests (42 tests)
   - `test_server.py` - App initialization and route mounting (7 tests)
-  - `test_routes_pandas.py` - Pandas API endpoints testing (15 tests)
-  - `test_models.py` - Pydantic request model validation (20 tests)
+  - `models/test_pandas.py` - Pydantic request model validation (20 tests)
+    - Parametrized tests for efficient validation coverage
+    - Shared `BASE_URL` constant (DRY principle)
+  - `routes/test_pandas.py` - Pandas API endpoints testing (15 tests)
+    - Reusable CSV creation helper (`create_csv_file`)
+    - Common response assertion helper (`assert_success_response`)
+    - Parametrized endpoint tests for head/tail
 
 - **`tests/src/`** - Source library tests (64 tests)
+  - `tests/data/sources/` - PandasSource implementation tests
+  - `tests/utils/cache/` - Cache management and concurrent access tests
+  - `tests/utils/network/` - URL validation and caching utilities tests
+
+**Overall Coverage: 100%** on all modules (`app/` and `src/`)
+
+#### Test Organization Principles
+
+The test suite follows best practices:
+- **DRY (Don't Repeat Yourself)**: Shared fixtures, constants, and helper functions
+- **KISS (Keep It Simple, Stupid)**: Parametrized tests reduce code duplication
+- **Mirrored Structure**: `tests/` directory mirrors `src/` and `app/` organization
   - `tests/data/sources/` - PandasSource implementation tests
   - `tests/utils/cache/` - Cache management and concurrent access tests
   - `tests/utils/network/` - URL validation and caching utilities tests

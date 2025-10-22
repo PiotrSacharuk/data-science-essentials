@@ -89,7 +89,6 @@ reports/figures/*.pdf
 !reports/figures/.gitkeep
 
 # Model artifacts
-models/
 *.pkl
 *.joblib
 

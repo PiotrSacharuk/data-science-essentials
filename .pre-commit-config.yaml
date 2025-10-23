@@ -17,7 +17,7 @@ repos:
         args: ["--target-version", "py314"]
 
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 7.0.0
     hooks:
       - id: isort
         args: ["--profile", "black"]
@@ -29,7 +29,7 @@ repos:
         args: [--max-line-length=88, --extend-ignore=E203]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.1
+    rev: v1.18.2
     hooks:
       - id: mypy
         additional_dependencies: [types-requests, types-PyYAML]

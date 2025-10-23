@@ -11,6 +11,7 @@ Usage:
 Commands:
     setup       - Set up project structure and download data
     install     - Install dependencies
+    run         - Start FastAPI development server
     test        - Run tests
     test-cov    - Run tests with coverage
     clean       - Clean temporary files
@@ -20,6 +21,7 @@ Commands:
 
 Examples:
     python make.py setup
+    python make.py run
     python make.py test-cov
     python make.py notebook
 """
@@ -148,6 +150,17 @@ class ProjectManager:
             print("Jupyter not installed. Install with: pip install jupyterlab")
             sys.exit(1)
 
+    def run_server(self) -> None:
+        """Start FastAPI development server."""
+        print("Starting FastAPI development server...")
+        cmd = ["fastapi", "dev", "app/server.py"]
+
+        try:
+            self.run_command(cmd, check=False)
+        except FileNotFoundError:
+            print("FastAPI not installed. Install with: pip install fastapi")
+            sys.exit(1)
+
     def show_help(self) -> None:
         """Show help message."""
         print(__doc__)
@@ -165,6 +178,7 @@ def main():
         choices=[
             "setup",
             "install",
+            "run",
             "test",
             "test-cov",
             "clean",
@@ -184,6 +198,8 @@ def main():
             manager.setup()
         elif args.command == "install":
             manager.install()
+        elif args.command == "run":
+            manager.run_server()
         elif args.command == "test":
             manager.test(coverage=False)
         elif args.command == "test-cov":

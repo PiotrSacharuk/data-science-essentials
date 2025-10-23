@@ -10,6 +10,7 @@ from urllib.error import URLError
 import pytest
 
 from src.utils.cache.cache_manager import CacheManager
+from tests.conftest import TEST_URL_FULL
 
 
 @pytest.fixture
@@ -55,7 +56,7 @@ class TestEnsureFileCached:
         with patch(
             "src.utils.cache.cache_manager.urllib.request.urlopen"
         ) as mock_urlopen:
-            cache_manager.ensure_file_cached("http://example.com/data.csv", cache_file)
+            cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
             mock_urlopen.assert_not_called()
 
     @patch("src.utils.cache.cache_manager.urllib.request.urlopen")
@@ -70,15 +71,14 @@ class TestEnsureFileCached:
         mock_urlopen.return_value = mock_response
 
         cache_file = temp_cache_dir / "new_file.csv"
-        test_url = "http://example.com/data.csv"
 
         # Execute
-        cache_manager.ensure_file_cached(test_url, cache_file)
+        cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
 
         # Verify
         assert cache_file.exists()
         assert cache_file.read_text() == "test,data\n1,2\n3,4"
-        mock_urlopen.assert_called_once_with(test_url, timeout=5)
+        mock_urlopen.assert_called_once_with(TEST_URL_FULL, timeout=5)
 
     @patch("src.utils.cache.cache_manager.urllib.request.urlopen")
     @patch("src.utils.cache.cache_manager.fcntl.flock")
@@ -97,7 +97,7 @@ class TestEnsureFileCached:
         cache_file = cache_subdir / "test.csv"
 
         # Execute
-        cache_manager.ensure_file_cached("http://example.com/data.csv", cache_file)
+        cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
 
         # Verify directory was created
         assert cache_subdir.exists()
@@ -116,7 +116,7 @@ class TestEnsureFileCached:
 
         # Execute and verify exception
         with pytest.raises(URLError):
-            cache_manager.ensure_file_cached("http://example.com/data.csv", cache_file)
+            cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
 
     @patch("src.utils.cache.cache_manager.urllib.request.urlopen")
     @patch("src.utils.cache.cache_manager.fcntl.flock")
@@ -137,7 +137,7 @@ class TestEnsureFileCached:
         mock_sleep.side_effect = create_file_after_sleep
 
         # Execute
-        cache_manager.ensure_file_cached("http://example.com/data.csv", cache_file)
+        cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
 
         # Verify file exists and sleep was called (waiting behavior)
         assert cache_file.exists()
@@ -161,7 +161,7 @@ class TestEnsureFileCached:
 
         # Execute and verify timeout
         with pytest.raises(TimeoutError, match="Timeout waiting for file download"):
-            cache_manager.ensure_file_cached("http://example.com/data.csv", cache_file)
+            cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
 
     @patch("src.utils.cache.cache_manager.urllib.request.urlopen")
     @patch("src.utils.cache.cache_manager.fcntl.flock")
@@ -184,7 +184,7 @@ class TestEnsureFileCached:
         mock_flock.side_effect = create_file_side_effect
 
         # Execute - should not call urlopen because file exists after double-check
-        cache_manager.ensure_file_cached("http://example.com/data.csv", cache_file)
+        cache_manager.ensure_file_cached(TEST_URL_FULL, cache_file)
 
         # Verify file exists and urlopen was not called (no download happened)
         assert cache_file.exists()

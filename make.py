@@ -61,19 +61,14 @@ class ProjectManager:
             sys.exit(1)
 
     def install(self) -> None:
-        """Install dependencies."""
-        print("Installing dependencies...")
-        requirements_files = ["requirements.txt"]
-
-        for req_file in requirements_files:
-            req_path = self.project_root / req_file
-            if req_path.exists():
-                self.run_command(
-                    [self.python, "-m", "pip", "install", "-r", str(req_path)]
-                )
-            else:
-                print(f"{req_file} not found!")
-                sys.exit(1)
+        """Install dependencies using Poetry."""
+        print("Installing dependencies with Poetry...")
+        try:
+            self.run_command(["poetry", "install"])
+        except FileNotFoundError:
+            print("Poetry not found! Install it with:")
+            print("curl -sSL https://install.python-poetry.org | python -")
+            sys.exit(1)
 
     def test(self, coverage: bool = False) -> None:
         """Run tests."""
@@ -81,7 +76,14 @@ class ProjectManager:
 
         if coverage:
             print("Running tests with coverage...")
-            cmd.extend(["--cov=src", "--cov-report=term-missing", "--cov-report=html"])
+            cmd.extend(
+                [
+                    "--cov=src",
+                    "--cov=app",
+                    "--cov-report=term-missing",
+                    "--cov-report=html",
+                ]
+            )
         else:
             print("Running tests...")
             cmd.append("-v")
@@ -147,7 +149,10 @@ class ProjectManager:
         try:
             self.run_command(cmd, check=False)
         except FileNotFoundError:
-            print("Jupyter not installed. Install with: pip install jupyterlab")
+            print(
+                "Jupyter not installed."
+                "Install project dependencies with: poetry install --with notebooks"
+            )
             sys.exit(1)
 
     def run_server(self) -> None:
@@ -158,7 +163,10 @@ class ProjectManager:
         try:
             self.run_command(cmd, check=False)
         except FileNotFoundError:
-            print("FastAPI not installed. Install with: pip install fastapi")
+            print(
+                "FastAPI not installed."
+                "Install project dependencies with: poetry install"
+            )
             sys.exit(1)
 
     def show_help(self) -> None:

@@ -47,7 +47,7 @@ plotly = "^5.10.0"
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
-addopts = "--cov=src --cov-report=html"
+addopts = "--cov=src --cov=app --cov-report=html"
 
 [tool.black]
 line-length = 88

@@ -113,24 +113,32 @@ class ProjectSetup:
             print(f"Downloaded {successful}/{total} datasets")
 
     def install_dependencies(self) -> None:
-        """Install Python dependencies."""
-        print("Installing Python dependencies...")
+        """Install Python dependencies using Poetry."""
+        print("Installing Python dependencies with Poetry...")
 
         try:
             import subprocess
 
-            # Install main dependencies
+            # Install dependencies with Poetry
             result = subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
+                ["poetry", "install"],
                 capture_output=True,
                 text=True,
             )
 
             if result.returncode == 0:
-                print("  Installed main dependencies")
+                print("  Installed dependencies with Poetry")
             else:
                 print(f"  Failed to install dependencies: {result.stderr}")
+                print(
+                    "  Make sure Poetry is installed "
+                    "(https://python-poetry.org/docs/#installation)"
+                )
 
+        except FileNotFoundError:
+            print("  Error: Poetry not found!")
+            print("  Please install Poetry first:")
+            print("  curl -sSL https://install.python-poetry.org | python -")
         except Exception as e:
             print(f"  Error installing dependencies: {e}")
 

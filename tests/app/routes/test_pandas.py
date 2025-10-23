@@ -11,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.server import app
+from tests.conftest import TEST_URL_INVALID
 
 
 @pytest.fixture
@@ -82,7 +83,7 @@ class TestLoadDataEndpoint:
 
     def test_load_data_invalid_url(self, client):
         """Test loading data with invalid URL."""
-        request_data = {"source_url": "http://invalid-domain-xyz-12345.com/file.csv"}
+        request_data = {"source_url": TEST_URL_INVALID}
         response = client.post("/data/load", json=request_data)
         assert_success_response(response, HTTPStatus.BAD_REQUEST)
 

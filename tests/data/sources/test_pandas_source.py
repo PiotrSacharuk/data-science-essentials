@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from src.data.sources.pandas_source import PandasSource
+from tests.conftest import TEST_URL_FULL
 
 # Shared column names used in tests
 DEFAULT_NAMES = [
@@ -88,36 +89,38 @@ def test_metadata(df_factory):
 
 
 # Tests for URL functionality
-@patch("src.data.sources.pandas_source.is_url")
-@patch("src.data.sources.pandas_source.CacheManager")
-@patch("src.data.sources.pandas_source.get_cached_file_path")
 @patch("pandas.read_csv")
-def test_url_source_initialization(
-    mock_read_csv, mock_get_cached_path, mock_cache_manager, mock_is_url
+@patch("src.data.sources.pandas_source.get_cached_file_path")
+@patch("src.data.sources.pandas_source.CacheManager")
+@patch("src.data.sources.pandas_source.is_url")
+def test_load_raw_url_no_cache(
+    mock_is_url,
+    mock_cache_manager,
+    mock_get_cached_path,
+    mock_read_csv,
 ):
-    """Test that URL sources are properly initialized with cache manager."""
+    """Test loading raw data from URL without cache hit."""
     # Setup mocks
     mock_is_url.return_value = True
-    mock_cache_path = Path("/cache/test.csv")
-    mock_get_cached_path.return_value = mock_cache_path
+    mock_read_csv.return_value = pd.DataFrame(MOCK_SMALL)
     mock_cache_instance = MagicMock()
     mock_cache_manager.return_value = mock_cache_instance
-    mock_read_csv.return_value = pd.DataFrame(MOCK_SMALL)
+    mock_cache_path = Path("/cache/test.csv")
+    mock_get_cached_path.return_value = mock_cache_path
 
     # Create PandasSource with URL
-    test_url = "https://example.com/data.csv"
-    source = PandasSource(test_url, names=DEFAULT_NAMES)
+    source = PandasSource(TEST_URL_FULL)
 
     # Verify URL detection and cache manager setup
-    mock_is_url.assert_called_once_with(test_url)
+    mock_is_url.assert_called_once_with(TEST_URL_FULL)
     mock_cache_manager.assert_called_once()
     mock_cache_instance.ensure_file_cached.assert_called_once_with(
-        test_url, mock_cache_path
+        TEST_URL_FULL, mock_cache_path
     )
 
     assert source.is_url is True
     assert source.cache_manager is mock_cache_instance
-    assert source.original_source == test_url
+    assert source.original_source == TEST_URL_FULL
 
 
 @patch("src.data.sources.pandas_source.is_url")
@@ -173,28 +176,29 @@ def test_refresh_cache_raises_error_for_local_files(df_factory):
         source.refresh_cache()
 
 
-@patch("src.data.sources.pandas_source.is_url")
-@patch("src.data.sources.pandas_source.CacheManager")
-@patch("src.data.sources.pandas_source.get_cached_file_path")
-@patch("pandas.read_csv")
-def test_refresh_cache_for_url_source(
-    mock_read_csv, mock_get_cached_path, mock_cache_manager, mock_is_url
-):
+def test_refresh_cache_for_url_source(monkeypatch):
     """Test refresh_cache functionality for URL sources."""
-    # Setup mocks
-    mock_is_url.return_value = True
-    mock_cache_path = Path("/cache/test.csv")
-    mock_get_cached_path.return_value = mock_cache_path
+    # Create mocks and mock instances
     mock_cache_instance = MagicMock()
-    mock_cache_manager.return_value = mock_cache_instance
-    mock_read_csv.return_value = pd.DataFrame(MOCK_SMALL)
+    mock_cache_manager = MagicMock(return_value=mock_cache_instance)
+    mock_cache_path = Path("/cache/test.csv")
 
-    # Create URL source
-    test_url = "https://example.com/data.csv"
-    source = PandasSource(test_url, names=DEFAULT_NAMES)
+    # Setup monkeypatch
+    monkeypatch.setattr("src.data.sources.pandas_source.is_url", lambda x: True)
+    monkeypatch.setattr(
+        "pandas.read_csv", lambda *args, **kwargs: pd.DataFrame(MOCK_SMALL)
+    )
+    monkeypatch.setattr(
+        "src.data.sources.pandas_source.get_cached_file_path",
+        lambda *args: mock_cache_path,
+    )
+    monkeypatch.setattr(
+        "src.data.sources.pandas_source.CacheManager", mock_cache_manager
+    )
 
-    # Test refresh_cache
-    with patch("builtins.print"):  # Mock print to avoid output in tests
+    # Create source and test refresh
+    with patch("builtins.print"):  # Just to silence print output
+        source = PandasSource(TEST_URL_FULL, names=DEFAULT_NAMES)
         source.refresh_cache()
 
     # Verify cache operations

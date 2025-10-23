@@ -255,7 +255,7 @@ The project has comprehensive test coverage with well-organized test structure t
   - `test_server.py` - App initialization and route mounting (7 tests)
   - `models/test_pandas.py` - Pydantic request model validation (20 tests)
     - Parametrized tests for efficient validation coverage
-    - Shared `BASE_URL` constant (DRY principle)
+    - Shared `TEST_URL_FULL` constant (DRY principle)
   - `routes/test_pandas.py` - Pandas API endpoints testing (15 tests)
     - Reusable CSV creation helper (`create_csv_file`)
     - Common response assertion helper (`assert_success_response`)

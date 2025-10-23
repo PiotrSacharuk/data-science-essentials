@@ -125,3 +125,9 @@ logs/*.log
 !logs/.gitkeep
 
 htmlcov/
+
+# Poetry
+.venv/
+dist/
+*.egg-info/
+poetry.lock

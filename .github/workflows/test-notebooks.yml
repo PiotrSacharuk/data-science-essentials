@@ -17,18 +17,20 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-
+      uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.14'
-
-    - name: Install dependencies
+    - name: Install Poetry
       run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        if [ -f notebook-requirements.txt ]; then pip install -r notebook-requirements.txt; fi
+        curl -sSL https://install.python-poetry.org | python -
+        poetry config virtualenvs.create true
+        poetry config virtualenvs.in-project true
+
+    - name: Install dependencies with Poetry
+      run: |
+        poetry install
 
     - name: Create data directories and download datasets
       run: |

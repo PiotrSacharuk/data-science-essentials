@@ -113,24 +113,32 @@ class ProjectSetup:
             print(f"Downloaded {successful}/{total} datasets")
 
     def install_dependencies(self) -> None:
-        """Install Python dependencies."""
-        print("Installing Python dependencies...")
+        """Install Python dependencies using Poetry."""
+        print("Installing Python dependencies with Poetry...")
 
         try:
             import subprocess
 
-            # Install main dependencies
+            # Install dependencies with Poetry
             result = subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
+                ["poetry", "install"],
                 capture_output=True,
                 text=True,
             )
 
             if result.returncode == 0:
-                print("  Installed main dependencies")
+                print("  Installed dependencies with Poetry")
             else:
                 print(f"  Failed to install dependencies: {result.stderr}")
+                print(
+                    "  Make sure Poetry is installed "
+                    "(https://python-poetry.org/docs/#installation)"
+                )
 
+        except FileNotFoundError:
+            print("  Error: Poetry not found!")
+            print("  Please install Poetry first:")
+            print("  curl -sSL https://install.python-poetry.org | python -")
         except Exception as e:
             print(f"  Error installing dependencies: {e}")
 
@@ -155,17 +163,16 @@ class ProjectSetup:
             print("Project setup completed successfully!")
             print()
             print("Next steps:")
-            print("1. Activate your virtual environment:")
-            print("   source .venv/bin/activate  # Linux/Mac")
-            print("   .venv\\Scripts\\activate     # Windows")
+            print("1. Start Jupyter Lab:")
+            print("   poetry run python make.py notebook")
             print()
-            print("2. Start Jupyter Lab:")
-            print("   python make.py notebook")
+            print("2. To add more datasets, edit config.yaml")
             print()
-            print("3. To add more datasets, edit config.yaml")
+            print("3. Run tests to verify everything works:")
+            print("   poetry run python make.py test")
             print()
-            print("4. Run tests to verify everything works:")
-            print("   python make.py test")
+            print("Note: All commands should be run using 'poetry run' to ensure")
+            print("      they use the project's Poetry-managed environment")
 
         except Exception as e:
             print(f"Setup failed: {e}")

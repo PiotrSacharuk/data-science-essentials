@@ -10,13 +10,14 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 25.9.0
     hooks:
       - id: black
         language_version: python3.14
+        args: ["--target-version", "py314"]
 
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 7.0.0
     hooks:
       - id: isort
         args: ["--profile", "black"]
@@ -28,7 +29,7 @@ repos:
         args: [--max-line-length=88, --extend-ignore=E203]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.1
+    rev: v1.18.2
     hooks:
       - id: mypy
         additional_dependencies: [types-requests, types-PyYAML]
@@ -42,8 +43,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: pytest
-        name: pytest
-        entry: bash -c 'PYTHONPATH=. pytest --cov=src'
+      - id: pytest-cov
+        name: pytest-cov
+        entry: poetry run pytest --cov=src --cov=app
         language: system
+        types: [python]
         pass_filenames: false

@@ -103,15 +103,28 @@ This project has been restructured to better support FastAPI application with mo
 
 ## Quick Start
 
-### 1. Clone and Setup
+### 1. Prerequisites
+
+- Python 3.14 or higher
+- Poetry (Python dependency management tool)
+
+If you don't have Poetry installed:
 ```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+### 2. Clone and Setup
+```bash
+# Clone repository
 git clone https://github.com/PiotrSacharuk/data-science-essentials.git
 cd data-science-essentials
 
-# Create and activate virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# .venv\Scripts\activate   # Windows
+# Install dependencies
+poetry install  # Install main dependencies
+poetry install --with notebooks  # Optional: install Jupyter notebook dependencies
+
+# Activate virtual environment
+poetry shell
 
 # Run automated setup
 python setup.py
@@ -120,16 +133,15 @@ python setup.py
 This will:
 - Create complete project directory structure
 - Download required datasets (configured in config.yaml)
-- Install Python dependencies
 - Set up development environment
 
-### 2. Verify Installation
+### 3. Verify Installation
 ```bash
 # Run tests
-python make.py test
+pytest
 
 # Start Jupyter Lab
-python make.py notebook
+poetry run jupyter lab
 ```
 
 ## Data Processing with PandasSource
@@ -207,44 +219,52 @@ The PandasSource implementation is built on modular utilities:
 
 ## Development Commands
 
-We use `make.py` as a task runner (Python equivalent of Makefile):
+We use Poetry for dependency management and running commands:
 
 ```bash
-# Project setup
-python make.py setup          # Complete project setup
-python make.py install        # Install dependencies
+# Environment management
+poetry install               # Install project dependencies
+poetry install --with notebooks  # Install with Jupyter support
+poetry shell                # Activate virtual environment
+poetry run python setup.py  # Run setup script
 
 # Development
-python make.py run            # Start FastAPI development server
-python make.py test           # Run tests
-python make.py test-cov       # Run tests with coverage
-python make.py clean          # Clean temporary files
+poetry run uvicorn app.server:app --reload  # Start FastAPI server
+poetry run pytest           # Run tests
+poetry run pytest --cov     # Run tests with coverage
+poetry run jupyter lab      # Start Jupyter Lab
 
-# Jupyter
-python make.py notebook       # Start Jupyter Lab
-python make.py data           # Download datasets
+# Dependency management
+poetry add package-name     # Add new dependency
+poetry add -D package-name  # Add new dev dependency
+poetry update              # Update dependencies
+poetry show               # List installed packages
+poetry export -f requirements.txt --output requirements.txt  # Export dependencies
 
-# Help
-python make.py help           # Show help message
+# Environment Information
+poetry env info           # Show virtual environment info
+poetry show --tree       # Show dependency tree
 ```
 
 ## Testing
 
+All test commands are run through Poetry:
+
 ```bash
 # Run all tests
-python make.py test
+poetry run pytest
 
 # Run with coverage report
-python make.py test-cov
+poetry run pytest --cov
 
 # Run specific test file
-pytest tests/data/sources/test_pandas_source.py -v
+poetry run pytest tests/data/sources/test_pandas_source.py -v
 
 # Run app tests only
-pytest tests/app/ -v
+poetry run pytest tests/app/ -v
 
 # Run with coverage for specific module
-pytest tests/ --cov=app --cov-report=term-missing
+poetry run pytest tests/ --cov=app --cov-report=html
 ```
 
 ### Test Coverage

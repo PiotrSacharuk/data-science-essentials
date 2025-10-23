@@ -17,16 +17,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.14'
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
       - name: Install dependencies
-        run: pip install -r requirements.gha.txt
+        run: poetry install
       - name: Run tests and generate JSON report
         run: |
-          pytest --json-report --json-report-file=report.json 2>&1 | tee coverage_report.txt; exit ${PIPESTATUS[0]}
+          poetry run pytest --json-report --json-report-file=report.json 2>&1 | tee coverage_report.txt; exit ${PIPESTATUS[0]}
       - name: Post test report to PR
         if: always()
         env:
@@ -34,4 +36,4 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           GITHUB_API_URL: ${{ github.api_url }}
-        run: python .github/scripts/post_test_report.py
+        run: poetry run python .github/scripts/post_test_report.py

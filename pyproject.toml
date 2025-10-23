@@ -15,7 +15,7 @@ packages = [{include = "src"}]
 python = "^3.14"
 pandas = "^2.3.2"
 numpy = "^2.2.6"
-fastapi = "^0.119.1"
+fastapi = { version = "^0.119.1", extras = ["standard"] }
 httpx = "^0.28.1"
 pydantic = "^2.12.3"
 requests = "^2.32.5"

@@ -274,13 +274,6 @@ The test suite follows best practices:
 - **DRY (Don't Repeat Yourself)**: Shared fixtures, constants, and helper functions
 - **KISS (Keep It Simple, Stupid)**: Parametrized tests reduce code duplication
 - **Mirrored Structure**: `tests/` directory mirrors `src/` and `app/` organization
-  - `tests/data/sources/` - PandasSource implementation tests
-  - `tests/utils/cache/` - Cache management and concurrent access tests
-  - `tests/utils/network/` - URL validation and caching utilities tests
-
-**Overall Coverage: 100%** on all modules (`app/` and `src/`)
-
-
 ## Using the Data Sources API
 
 ```python

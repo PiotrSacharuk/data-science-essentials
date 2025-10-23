@@ -26,8 +26,7 @@ jobs:
         run: pip install -r requirements.gha.txt
       - name: Run tests and generate JSON report
         run: |
-          pytest --json-report --json-report-file=report.json > coverage_report.txt 2>&1 || true
-          cat coverage_report.txt
+          pytest --json-report --json-report-file=report.json 2>&1 | tee coverage_report.txt; exit ${PIPESTATUS[0]}
       - name: Post test report to PR
         if: always()
         env:

@@ -9,4 +9,6 @@ app.include_router(pandas_router)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app)
+    from app.config import settings
+
+    uvicorn.run(app, host=settings.server_host, port=settings.server_port)

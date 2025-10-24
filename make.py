@@ -11,7 +11,8 @@ Usage:
 Commands:
     setup       - Set up project structure and download data
     install     - Install dependencies
-    run         - Start FastAPI development server
+    run-fastapi - Start FastAPI development server from fastapi cmd
+    run-python  - Start FastAPI development server from python cmd
     test        - Run tests
     test-cov    - Run tests with coverage
     clean       - Clean temporary files
@@ -21,7 +22,7 @@ Commands:
 
 Examples:
     python make.py setup
-    python make.py run
+    python make.py run-fastapi
     python make.py test-cov
     python make.py notebook
 """
@@ -155,10 +156,9 @@ class ProjectManager:
             )
             sys.exit(1)
 
-    def run_server(self) -> None:
+    def run_server_cmd(self, cmd: list[str]) -> None:
         """Start FastAPI development server."""
         print("Starting FastAPI development server...")
-        cmd = ["fastapi", "dev", "app/server.py"]
 
         try:
             self.run_command(cmd, check=False)
@@ -168,6 +168,14 @@ class ProjectManager:
                 "Install project dependencies with: poetry install"
             )
             sys.exit(1)
+
+    def run_from_fastapi(self) -> None:
+        """Start FastAPI development server using fastapi cmd."""
+        self.run_server_cmd(["fastapi", "dev", "app/server.py"])
+
+    def run_from_python(self) -> None:
+        """Start FastAPI development server using python cmd."""
+        self.run_server_cmd(["python", "app/server.py"])
 
     def show_help(self) -> None:
         """Show help message."""
@@ -186,7 +194,8 @@ def main():
         choices=[
             "setup",
             "install",
-            "run",
+            "run-fastapi",
+            "run-python",
             "test",
             "test-cov",
             "clean",
@@ -206,8 +215,10 @@ def main():
             manager.setup()
         elif args.command == "install":
             manager.install()
-        elif args.command == "run":
-            manager.run_server()
+        elif args.command == "run-fastapi":
+            manager.run_from_fastapi()
+        elif args.command == "run-python":
+            manager.run_from_python()
         elif args.command == "test":
             manager.test(coverage=False)
         elif args.command == "test-cov":

@@ -130,4 +130,3 @@ htmlcov/
 .venv/
 dist/
 *.egg-info/
-poetry.lock

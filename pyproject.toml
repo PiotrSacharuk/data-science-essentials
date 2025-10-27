@@ -46,9 +46,9 @@ plotly = "^5.10.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = "test_*.py"
-python_functions = "test_*"
-addopts = "--cov=src --cov=app --cov-report=html"
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "--cov=src --cov=app --cov-report=html --cov-fail-under=99"
 
 [tool.black]
 line-length = 88

@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from pathlib import Path
 
@@ -6,6 +7,8 @@ from fastapi import APIRouter, HTTPException
 from app.models.pandas import DataLoadRequest, DataSliceRequest
 from src.data.sources.pandas_source import PandasSource
 
+log = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/data", tags=["Pandas"])
 
 
@@ -13,8 +16,10 @@ def get_pandas_source(request: DataLoadRequest) -> PandasSource:
     """Helper to create PandasSource with project root cache dir."""
     project_root = Path(__file__).parent.parent.parent
     cache_dir = str(project_root / "data" / "cache")
+    source_url = request.source_url
+    log.info(f"Get pandas data from {source_url}")
     return PandasSource(
-        request.source_url,
+        source_url,
         separator=request.separator,
         header=request.header,
         cache_dir=cache_dir,
@@ -41,6 +46,7 @@ def data_head(request: DataSliceRequest):
     try:
         source = get_pandas_source(request)
         result = source.head(request.n).to_dict(orient="records")
+        log.info(f"Returning head with {request.n} records")
         return {"status": "success", "data": result}
     except Exception as e:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=str(e))
@@ -51,6 +57,7 @@ def data_tail(request: DataSliceRequest):
     try:
         source = get_pandas_source(request)
         result = source.tail(request.n).to_dict(orient="records")
+        log.info(f"Returning tail with {request.n} records")
         return {"status": "success", "data": result}
     except Exception as e:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=str(e))
@@ -61,6 +68,7 @@ def data_describe(request: DataLoadRequest):
     try:
         source = get_pandas_source(request)
         result = source.describe().to_dict()
+        log.info("Returning data description statistics")
         return {"status": "success", "statistics": result}
     except Exception as e:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=str(e))

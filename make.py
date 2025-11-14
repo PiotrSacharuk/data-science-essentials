@@ -18,12 +18,16 @@ Commands:
     clean       - Clean temporary files
     data        - Download datasets
     notebook    - Start Jupyter Lab
+    git-hooks   - Set up pre-commit git hooks
+    fix-hooks   - Fix code formatting issues
     help        - Show this help message
 
 Examples:
     python make.py setup
     python make.py run-fastapi
     python make.py test-cov
+    python make.py git-hooks
+    python make.py fix-hooks
     python make.py notebook
 """
 
@@ -132,6 +136,84 @@ class ProjectManager:
         else:
             print(f"Cleaned {cleaned} items")
 
+    def setup_git_hooks(self) -> None:
+        """Set up git hooks using pre-commit."""
+        print("Setting up git hooks with pre-commit...")
+
+        # Check if pre-commit config exists
+        config_file = self.project_root / ".pre-commit-config.yaml"
+        if not config_file.exists():
+            print("ERROR: .pre-commit-config.yaml not found!")
+            print("Please create .pre-commit-config.yaml first")
+            sys.exit(1)
+
+        try:
+            # Install pre-commit hooks
+            print("Installing pre-commit hooks...")
+            self.run_command(["poetry", "run", "pre-commit", "install"])
+
+            # Install commit-msg hook for conventional commits
+            print("Installing commit-msg hook...")
+            self.run_command(
+                ["poetry", "run", "pre-commit", "install", "--hook-type", "commit-msg"]
+            )
+
+            # Run pre-commit on all files to test setup
+            print("Testing hooks on all files...")
+            try:
+                self.run_command(
+                    ["poetry", "run", "pre-commit", "run", "--all-files"], check=False
+                )
+                print("Git hooks installed successfully!")
+                print("\nHooks that will run before each commit:")
+                self.show_hook_info()
+            except subprocess.CalledProcessError:
+                print("WARNING: Some hooks failed on existing files.")
+                print("Run 'python make.py fix-hooks' to fix formatting issues.")
+
+        except FileNotFoundError:
+            print("ERROR: pre-commit not found! Install it first:")
+            print("poetry add --group dev pre-commit")
+            sys.exit(1)
+
+    def fix_hooks(self) -> None:
+        """Fix code formatting and style issues."""
+        print("Fixing code formatting and style issues...")
+
+        try:
+            # Run only fixable hooks
+            print("Running black formatter...")
+            self.run_command(["poetry", "run", "black", "."], check=False)
+
+            print("Running isort import sorter...")
+            self.run_command(["poetry", "run", "isort", "."], check=False)
+
+            print("Code formatting fixed!")
+            print("You can now commit your changes.")
+
+        except FileNotFoundError as e:
+            print(f"ERROR: Tool not found: {e}")
+            print("Make sure you have installed dev dependencies:")
+            print("poetry install")
+
+    def show_hook_info(self) -> None:
+        """Show information about configured hooks."""
+        config_file = self.project_root / ".pre-commit-config.yaml"
+        if config_file.exists():
+            print("Configured pre-commit hooks:")
+            print("  - trailing-whitespace - removes trailing spaces")
+            print("  - end-of-file-fixer - ensures files end with newline")
+            print("  - check-yaml - validates YAML syntax")
+            print("  - check-added-large-files - prevents large files")
+            print("  - black - code formatting")
+            print("  - isort - import sorting")
+            print("  - flake8 - code linting")
+            print("  - mypy - type checking")
+            print("  - bandit - security linting")
+            print("  - pytest-cov - runs tests with coverage")
+        else:
+            print("No pre-commit configuration found.")
+
     def download_data(self) -> None:
         """Download datasets."""
         print("Downloading datasets...")
@@ -201,6 +283,8 @@ def main():
             "clean",
             "data",
             "notebook",
+            "git-hooks",
+            "fix-hooks",
             "help",
         ],
         help="Command to run",
@@ -229,6 +313,10 @@ def main():
             manager.download_data()
         elif args.command == "notebook":
             manager.start_notebook()
+        elif args.command == "git-hooks":
+            manager.setup_git_hooks()
+        elif args.command == "fix-hooks":
+            manager.fix_hooks()
         elif args.command == "help":
             manager.show_help()
         else:

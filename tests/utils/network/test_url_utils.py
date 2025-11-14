@@ -15,41 +15,90 @@ from src.utils.network.url_utils import (
     validate_url,
 )
 
+# Import global test constants from conftest.py
+from tests.conftest import (
+    TEST_DOMAIN,
+    TEST_EXTERNAL_DOMAIN1,
+    TEST_EXTERNAL_DOMAIN2,
+    TEST_FILE_NAME,
+    TEST_URL_BASE,
+    TEST_URL_FILE,
+    TEST_URL_FTP,
+    TEST_URL_FULL,
+    TEST_URL_HTTP,
+    TEST_URL_JSON,
+    TEST_URL_MAILTO,
+    TEST_URL_MALFORMED_EMPTY,
+    TEST_URL_MALFORMED_INVALID,
+    TEST_URL_MALFORMED_NO_NETLOC,
+    TEST_URL_MALFORMED_NO_SCHEME,
+    TEST_URL_PLAIN,
+    TEST_URL_SPECIAL_CHARS,
+    TEST_URL_SUBDOMAIN,
+)
+
+
+class TestDataUrls:
+    """Centralized test data using global test constants."""
+
+    VALID_HTTP_URLS = [
+        TEST_URL_HTTP,
+        f"{TEST_URL_HTTP}/path",
+        f"{TEST_URL_HTTP}/path?query=value",
+    ]
+
+    VALID_HTTPS_URLS = [TEST_URL_BASE, f"{TEST_URL_BASE}/path", TEST_URL_SUBDOMAIN]
+
+    INVALID_SCHEME_URLS = [TEST_URL_FTP, TEST_URL_FILE, TEST_URL_MAILTO]
+
+    LOCAL_PATHS = [
+        "/path/to/file.csv",
+        "./relative/path.csv",
+        "file.csv",
+        "C:\\Windows\\file.txt",
+    ]
+
+    MALFORMED_URLS = [
+        TEST_URL_MALFORMED_EMPTY,
+        TEST_URL_MALFORMED_INVALID,
+        TEST_URL_MALFORMED_NO_NETLOC,
+        TEST_URL_MALFORMED_NO_SCHEME,
+    ]
+
+    # Common test URLs for cache tests (reuse global constants)
+    CSV_URL = TEST_URL_FULL
+    JSON_URL = TEST_URL_JSON
+    PLAIN_URL = TEST_URL_PLAIN
+    SPECIAL_CHARS_URL = TEST_URL_SPECIAL_CHARS
+
 
 class TestIsUrl:
     """Test is_url function."""
 
-    def test_valid_http_url(self):
+    @pytest.mark.parametrize("url", TestDataUrls.VALID_HTTP_URLS)
+    def test_valid_http_url(self, url):
         """Test valid HTTP URL."""
-        assert is_url("http://example.com") is True
-        assert is_url("http://example.com/path") is True
-        assert is_url("http://example.com/path?query=value") is True
+        assert is_url(url) is True
 
-    def test_valid_https_url(self):
+    @pytest.mark.parametrize("url", TestDataUrls.VALID_HTTPS_URLS)
+    def test_valid_https_url(self, url):
         """Test valid HTTPS URL."""
-        assert is_url("https://example.com") is True
-        assert is_url("https://example.com/path") is True
-        assert is_url("https://sub.example.com/path") is True
+        assert is_url(url) is True
 
-    def test_invalid_scheme(self):
+    @pytest.mark.parametrize("url", TestDataUrls.INVALID_SCHEME_URLS)
+    def test_invalid_scheme(self, url):
         """Test URLs with invalid schemes."""
-        assert is_url("ftp://example.com") is False
-        assert is_url("file:///path/to/file") is False
-        assert is_url("mailto:test@example.com") is False
+        assert is_url(url) is False
 
-    def test_local_paths(self):
+    @pytest.mark.parametrize("path", TestDataUrls.LOCAL_PATHS)
+    def test_local_paths(self, path):
         """Test local file paths."""
-        assert is_url("/path/to/file.csv") is False
-        assert is_url("./relative/path.csv") is False
-        assert is_url("file.csv") is False
-        assert is_url("C:\\Windows\\file.txt") is False
+        assert is_url(path) is False
 
-    def test_invalid_urls(self):
+    @pytest.mark.parametrize("url", TestDataUrls.MALFORMED_URLS + [None])
+    def test_invalid_urls(self, url):
         """Test invalid URL formats."""
-        assert is_url("") is False
-        assert is_url("not-a-url") is False
-        assert is_url("http://") is False
-        assert is_url("://example.com") is False
+        assert is_url(url) is False
 
     def test_urls_without_netloc(self):
         """Test URLs without network location."""
@@ -68,43 +117,40 @@ class TestIsUrl:
 class TestGenerateCacheFilename:
     """Test generate_cache_filename function."""
 
-    def test_default_extension(self):
-        """Test cache filename generation with default extension."""
-        filename = generate_cache_filename("http://example.com/data.csv")
+    @pytest.mark.parametrize(
+        "url,extension,expected_suffix",
+        [
+            (TestDataUrls.CSV_URL, ".csv", ".csv"),
+            (TestDataUrls.JSON_URL, ".json", ".json"),
+            (TestDataUrls.PLAIN_URL, "", ""),
+        ],
+    )
+    def test_cache_filename_extensions(self, url, extension, expected_suffix):
+        """Test cache filename generation with different extensions."""
+        filename = generate_cache_filename(url, extension)
         assert filename.startswith("cached_")
-        assert filename.endswith(".csv")
-        assert len(filename) == len("cached_") + 32 + len(
-            ".csv"
-        )  # MD5 hash is 32 chars
-
-    def test_custom_extension(self):
-        """Test cache filename generation with custom extension."""
-        filename = generate_cache_filename("http://example.com/data.json", ".json")
-        assert filename.startswith("cached_")
-        assert filename.endswith(".json")
-
-    def test_no_extension(self):
-        """Test cache filename generation without extension."""
-        filename = generate_cache_filename("http://example.com/data", "")
-        assert filename.startswith("cached_")
-        assert not filename.endswith(".")
+        assert filename.endswith(expected_suffix)
+        if extension:
+            assert len(filename) == len("cached_") + 32 + len(
+                extension
+            )  # MD5 hash is 32 chars
 
     def test_consistent_hash(self):
         """Test that same URL produces same hash."""
-        url = "http://example.com/data.csv"
+        url = TestDataUrls.CSV_URL
         filename1 = generate_cache_filename(url)
         filename2 = generate_cache_filename(url)
         assert filename1 == filename2
 
     def test_different_urls_different_hashes(self):
         """Test that different URLs produce different hashes."""
-        filename1 = generate_cache_filename("http://example.com/data1.csv")
-        filename2 = generate_cache_filename("http://example.com/data2.csv")
+        filename1 = generate_cache_filename(TestDataUrls.CSV_URL)
+        filename2 = generate_cache_filename(f"{TEST_URL_BASE}/data2.csv")
         assert filename1 != filename2
 
     def test_special_characters_in_url(self):
         """Test URLs with special characters."""
-        url = "http://example.com/data with spaces.csv?param=value&other=123"
+        url = TestDataUrls.SPECIAL_CHARS_URL
         filename = generate_cache_filename(url)
         assert filename.startswith("cached_")
         assert filename.endswith(".csv")
@@ -121,7 +167,7 @@ class TestGetCachedFilePath:
 
     def test_default_extension(self, temp_cache_dir):
         """Test cached file path with default extension."""
-        url = "http://example.com/data.csv"
+        url = TestDataUrls.CSV_URL
         path = get_cached_file_path(url, temp_cache_dir)
 
         assert isinstance(path, Path)
@@ -131,14 +177,14 @@ class TestGetCachedFilePath:
 
     def test_custom_extension(self, temp_cache_dir):
         """Test cached file path with custom extension."""
-        url = "http://example.com/data.json"
+        url = TestDataUrls.JSON_URL
         path = get_cached_file_path(url, temp_cache_dir, ".json")
 
         assert path.name.endswith(".json")
 
     def test_path_combination(self, temp_cache_dir):
         """Test that path is correctly combined."""
-        url = "http://example.com/data.csv"
+        url = TestDataUrls.CSV_URL
         path = get_cached_file_path(url, temp_cache_dir)
 
         expected_filename = generate_cache_filename(url)
@@ -149,7 +195,7 @@ class TestGetCachedFilePath:
     def test_with_nested_cache_dir(self, temp_cache_dir):
         """Test with nested cache directory."""
         nested_dir = temp_cache_dir / "nested" / "cache"
-        url = "http://example.com/data.csv"
+        url = TestDataUrls.CSV_URL
         path = get_cached_file_path(url, nested_dir)
 
         assert path.parent == nested_dir
@@ -161,32 +207,32 @@ class TestValidateUrl:
 
     def test_valid_http_urls(self):
         """Test valid HTTP URLs."""
-        assert validate_url("http://example.com") is True
-        assert validate_url("http://sub.example.com/path") is True
-        assert validate_url("http://example.com:8080/api") is True
+        assert validate_url(TEST_URL_BASE) is True
+        assert validate_url(TEST_URL_SUBDOMAIN) is True
+        assert validate_url(f"{TEST_URL_BASE}/:8080/api") is True
 
     def test_valid_https_urls(self):
         """Test valid HTTPS URLs."""
-        assert validate_url("https://example.com") is True
-        assert validate_url("https://api.example.com/v1/data") is True
+        assert validate_url(TEST_URL_BASE) is True
+        assert validate_url(f"https://api.{TEST_DOMAIN}/v1/data") is True
 
     def test_custom_allowed_schemes(self):
         """Test with custom allowed schemes."""
-        assert validate_url("ftp://example.com", ["ftp"]) is True
-        assert validate_url("http://example.com", ["ftp"]) is False
+        assert validate_url(TEST_URL_FTP, ["ftp"]) is True
+        assert validate_url(TEST_URL_HTTP, ["ftp"]) is False
 
     def test_invalid_schemes(self):
         """Test URLs with invalid schemes."""
-        assert validate_url("file:///path/to/file") is False
-        assert validate_url("mailto:test@example.com") is False
-        assert validate_url("ftp://example.com") is False  # Not in default allowed
+        assert validate_url(TEST_URL_FILE) is False
+        assert validate_url(TEST_URL_MAILTO) is False
+        assert validate_url(TEST_URL_FTP) is False  # Not in default allowed
 
     def test_malformed_urls(self):
         """Test malformed URLs."""
         assert validate_url("") is False
         assert validate_url("not-a-url") is False
         assert validate_url("http://") is False
-        assert validate_url("://example.com") is False
+        assert validate_url(f"://{TEST_DOMAIN}") is False
 
     def test_security_blocked_hosts(self):
         """Test that localhost and local IPs are blocked."""
@@ -208,8 +254,8 @@ class TestValidateUrl:
 
     def test_valid_external_hosts(self):
         """Test that external hosts are allowed."""
-        assert validate_url("http://google.com") is True
-        assert validate_url("https://github.com") is True
+        assert validate_url(f"http://{TEST_EXTERNAL_DOMAIN1}") is True
+        assert validate_url(f"https://{TEST_EXTERNAL_DOMAIN2}") is True
         assert (
             validate_url("http://192.168.1.100") is True
         )  # Private IP but not blocked ones
@@ -231,14 +277,14 @@ class TestValidateUrl:
     def test_default_schemes_parameter(self):
         """Test that default schemes parameter works correctly."""
         # Should use default ['http', 'https']
-        assert validate_url("http://example.com", None) is True
-        assert validate_url("https://example.com", None) is True
-        assert validate_url("ftp://example.com", None) is False
+        assert validate_url(TEST_URL_HTTP, None) is True
+        assert validate_url(TEST_URL_BASE, None) is True
+        assert validate_url(TEST_URL_FTP, None) is False
 
     def test_empty_allowed_schemes(self):
         """Test with empty allowed schemes list."""
-        assert validate_url("http://example.com", []) is False
-        assert validate_url("https://example.com", []) is False
+        assert validate_url(TEST_URL_HTTP, []) is False
+        assert validate_url(TEST_URL_BASE, []) is False
 
 
 class TestIntegration:
@@ -252,7 +298,7 @@ class TestIntegration:
 
     def test_url_validation_and_caching_flow(self, temp_cache_dir):
         """Test typical flow: validate URL then generate cache path."""
-        url = "https://example.com/api/data.csv"
+        url = f"{TEST_URL_BASE}/api/{TEST_FILE_NAME}"
 
         # First validate URL
         assert validate_url(url) is True
@@ -281,7 +327,7 @@ class TestIntegration:
 
     def test_localhost_url_workflow(self, temp_cache_dir):
         """Test workflow with localhost URL."""
-        localhost_url = "http://localhost:8080/data.csv"
+        localhost_url = f"http://localhost:8080/{TEST_FILE_NAME}"
 
         # Should be detected as URL but in current implementation,
         # localhost:8080 passes validation
@@ -291,7 +337,7 @@ class TestIntegration:
         )  # Current implementation allows localhost:8080
 
         # Test with plain localhost (should fail)
-        plain_localhost = "http://localhost/data.csv"
+        plain_localhost = f"http://localhost/{TEST_FILE_NAME}"
         assert validate_url(plain_localhost) is False
 
         # Cache generation should still work
@@ -308,7 +354,7 @@ class TestExceptionHandling:
         # Make urlparse raise an exception
         mock_urlparse.side_effect = ValueError("Simulated urlparse error")
 
-        result = is_url("http://example.com")
+        result = is_url(TEST_URL_HTTP)
         assert result is False
 
     @patch("src.utils.network.url_utils.urlparse")
@@ -317,7 +363,7 @@ class TestExceptionHandling:
         # Make urlparse raise an exception
         mock_urlparse.side_effect = AttributeError("Simulated urlparse error")
 
-        result = validate_url("http://example.com")
+        result = validate_url(TEST_URL_HTTP)
         assert result is False
 
     @patch("src.utils.network.url_utils.urlparse")
@@ -326,5 +372,5 @@ class TestExceptionHandling:
         # Make urlparse raise an exception
         mock_urlparse.side_effect = TypeError("Another simulated error")
 
-        result = validate_url("ftp://example.com", allowed_schemes=["ftp"])
+        result = validate_url(TEST_URL_FTP, allowed_schemes=["ftp"])
         assert result is False

@@ -60,13 +60,13 @@ class TestDataLoadRequest:
     def test_model_json_serialization(self):
         """Test that model can be serialized to JSON."""
         request = DataLoadRequest(
-            source_url="https://example.com/data.csv",
+            source_url=TEST_URL_FULL,
             separator=";",
             header=False,
         )
         json_data = request.model_dump()
         assert json_data == {
-            "source_url": "https://example.com/data.csv",
+            "source_url": TEST_URL_FULL,
             "separator": ";",
             "header": False,
         }
@@ -74,12 +74,12 @@ class TestDataLoadRequest:
     def test_model_json_deserialization(self):
         """Test that model can be created from JSON."""
         json_data = {
-            "source_url": "https://example.com/data.csv",
+            "source_url": TEST_URL_FULL,
             "separator": "|",
             "header": True,
         }
         request = DataLoadRequest(**json_data)
-        assert request.source_url == "https://example.com/data.csv"
+        assert request.source_url == TEST_URL_FULL
         assert request.separator == "|"
         assert request.header is True
 

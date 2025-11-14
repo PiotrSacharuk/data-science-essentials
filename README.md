@@ -246,6 +246,62 @@ poetry env info           # Show virtual environment info
 poetry show --tree       # Show dependency tree
 ```
 
+### Quick Development Tasks (make.py)
+
+For common development tasks, use the included `make.py` script:
+
+```bash
+# Project setup and management
+python make.py setup        # Set up project structure and download data
+python make.py install      # Install dependencies with Poetry
+python make.py clean        # Clean temporary files and cache
+
+# Development server
+python make.py run-fastapi  # Start FastAPI server (using fastapi CLI)
+python make.py run-python   # Start FastAPI server (using python)
+
+# Testing
+python make.py test         # Run tests
+python make.py test-cov     # Run tests with coverage
+
+# Git hooks and code quality
+python make.py git-hooks    # Set up pre-commit hooks for code quality
+python make.py fix-hooks    # Fix code formatting issues
+
+# Data and notebooks
+python make.py data         # Download datasets
+python make.py notebook     # Start Jupyter Lab
+
+# Help
+python make.py help         # Show all available commands
+```
+
+### Git Hooks and Code Quality
+
+The project uses pre-commit hooks to ensure code quality. These hooks run automatically before each commit:
+
+```bash
+# One-time setup of git hooks
+python make.py git-hooks
+
+# Fix formatting issues when hooks fail
+python make.py fix-hooks
+```
+
+**Configured hooks:**
+- **trailing-whitespace** - removes trailing spaces
+- **end-of-file-fixer** - ensures files end with newline
+- **check-yaml** - validates YAML syntax
+- **check-added-large-files** - prevents committing large files
+- **black** - code formatting
+- **isort** - import sorting
+- **flake8** - code linting
+- **mypy** - type checking
+- **bandit** - security linting
+- **pytest-cov** - runs tests with coverage
+
+If hooks fail during commit, run `python make.py fix-hooks` to automatically fix formatting issues, then commit again.
+
 ## Testing
 
 All test commands are run through Poetry:

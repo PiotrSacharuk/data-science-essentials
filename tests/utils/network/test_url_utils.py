@@ -209,7 +209,7 @@ class TestValidateUrl:
         """Test valid HTTP URLs."""
         assert validate_url(TEST_URL_BASE) is True
         assert validate_url(TEST_URL_SUBDOMAIN) is True
-        assert validate_url(f"{TEST_URL_BASE}/:8080/api") is True
+        assert validate_url(f"{TEST_URL_BASE}:8080/api") is True
 
     def test_valid_https_urls(self):
         """Test valid HTTPS URLs."""

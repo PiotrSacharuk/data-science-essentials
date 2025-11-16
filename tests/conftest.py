@@ -22,8 +22,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../"
 # These URLs are used ONLY for testing URL parsing and validation.
 # They do NOT establish actual network connections.
 
-# Base test domain (reserved for testing per RFC 2606)
-TEST_DOMAIN = "example.com"  # More accurate than TEST_HOSTNAME
+# Base test domain
+TEST_DOMAIN = "example.com"
 
 # Primary secure URLs for testing
 HTTPS_SCHEME = "https"
@@ -58,7 +58,6 @@ TEST_URL_FILE = "file:///path/to/file"
 # Malformed URLs for testing (used to verify error handling)
 TEST_URL_MALFORMED_EMPTY = ""
 TEST_URL_MALFORMED_INVALID = "not-a-url"
-# nosec: B104 - Malformed URL for testing, not used for connections
 TEST_URL_MALFORMED_NO_NETLOC = f"{_INSECURE_PROTOCOLS['http']}://"
 TEST_URL_MALFORMED_NO_SCHEME = f"://{TEST_DOMAIN}"
 

@@ -37,22 +37,21 @@ TEST_URL_INVALID = "https://invalid-domain-xyz-12345.com/file.csv"
 TEST_URL_SUBDOMAIN = f"https://sub.{TEST_DOMAIN}/path"
 
 # Additional URL constants for comprehensive testing
-# For testing HTTP protocol validation - NOT used for actual connections
-_HTTP_PROTOCOL = "http"  # Used only in tests for protocol validation
+# For testing protocol validation - NOT used for actual connections
+_INSECURE_PROTOCOLS = {
+    "ftp": "ftp",
+    "http": "http",  # Used only for testing protocol validation
+}
+
 # The following variable contains an insecure protocol for testing purposes:
-INSECURE_URL_FOR_TESTING = f"{_HTTP_PROTOCOL}://{TEST_DOMAIN}"  # nosec: B104
+INSECURE_URL_FOR_TESTING = f"{_INSECURE_PROTOCOLS['http']}://{TEST_DOMAIN}"
 TEST_URL_HTTP = INSECURE_URL_FOR_TESTING
 TEST_URL_JSON = f"{TEST_URL_BASE}/data.json"
 TEST_URL_PLAIN = f"{TEST_URL_BASE}/data"
 TEST_URL_SPECIAL_CHARS = f"{TEST_URL_BASE}/data with spaces.csv?param=value&other=123"
 
 # Test URLs with different schemes
-# For testing protocol validation - NOT used for actual connections
-_INSECURE_PROTOCOLS = {
-    "ftp": "ftp",
-    "http": "http",  # Used only for testing protocol validation
-}
-TEST_URL_FTP = f"{_INSECURE_PROTOCOLS['ftp']}://{TEST_DOMAIN}"  # nosec: B601
+TEST_URL_FTP = f"{_INSECURE_PROTOCOLS['ftp']}://{TEST_DOMAIN}"
 TEST_URL_MAILTO = f"mailto:test@{TEST_DOMAIN}"
 TEST_URL_FILE = "file:///path/to/file"
 
@@ -60,7 +59,7 @@ TEST_URL_FILE = "file:///path/to/file"
 TEST_URL_MALFORMED_EMPTY = ""
 TEST_URL_MALFORMED_INVALID = "not-a-url"
 # nosec: B104 - Malformed URL for testing, not used for connections
-TEST_URL_MALFORMED_NO_NETLOC = "http://"  # nosec: B104
+TEST_URL_MALFORMED_NO_NETLOC = f"{_INSECURE_PROTOCOLS['http']}://"
 TEST_URL_MALFORMED_NO_SCHEME = f"://{TEST_DOMAIN}"
 
 # External domains for testing

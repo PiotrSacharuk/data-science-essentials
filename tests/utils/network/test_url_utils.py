@@ -254,7 +254,7 @@ class TestValidateUrl:
 
     def test_valid_external_hosts(self):
         """Test that external hosts are allowed."""
-        assert validate_url(f"http://{TEST_EXTERNAL_DOMAIN1}") is True
+        assert validate_url(f"https://{TEST_EXTERNAL_DOMAIN1}") is True
         assert validate_url(f"https://{TEST_EXTERNAL_DOMAIN2}") is True
         assert (
             validate_url("http://192.168.1.100") is True

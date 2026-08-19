@@ -24,10 +24,12 @@ class TestAppInitialization:
 
     def test_app_has_pandas_router(self, client):
         """Test that the app includes the pandas router."""
-        # Check if /data routes are registered
-        routes = [route.path for route in app.routes]
-        # Pandas router should have registered routes with /data prefix
-        assert any(route.startswith("/data") for route in routes)
+        response = client.get("/openapi.json")
+
+        assert response.status_code == 200
+
+        paths = response.json()["paths"]
+        assert any(path.startswith("/data") for path in paths)
 
 
 class TestAppRoutes:

@@ -38,6 +38,7 @@ optional = true
 
 [tool.poetry.group.notebooks.dependencies]
 jupyter = "^1.0.0"
+jupyterlab = ">=4.5.10,<5.0.0"
 papermill = "^2.4.0"
 nbconvert = "^7.17.0"
 matplotlib = "^3.5.0"

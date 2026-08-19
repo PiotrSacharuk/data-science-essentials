@@ -7,6 +7,7 @@ This script expects the following environment variables:
 - PR_NUMBER
 - GITHUB_API_URL (optional, defaults to https://api.github.com)
 """
+
 import json
 import os
 import sys

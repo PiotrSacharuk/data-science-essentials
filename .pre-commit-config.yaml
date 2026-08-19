@@ -10,14 +10,14 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/psf/black
-    rev: 25.9.0
+    rev: 26.5.1
     hooks:
       - id: black
         language_version: python3.14
         args: ["--target-version", "py314"]
 
   - repo: https://github.com/pycqa/isort
-    rev: 7.0.0
+    rev: 9.0.0b5
     hooks:
       - id: isort
         args: ["--profile", "black"]
@@ -29,13 +29,13 @@ repos:
         args: [--max-line-length=88, --extend-ignore=E203]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v2.3.1
     hooks:
       - id: mypy
         additional_dependencies: [types-requests, types-PyYAML]
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.6
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: ["-r", "src/", "app/", "-f", "json", "-o", "bandit-report.json"]
